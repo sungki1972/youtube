@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube MP3 변환</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">YouTube MP3 변환</h1>
+            
+            <!-- 탭 네비게이션 -->
+            <div class="mb-8">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8">
+                        <button id="convertTab" onclick="switchTab('convert')" 
+                                class="border-b-2 border-blue-500 text-blue-600 py-4 px-1 text-sm font-medium">
+                            MP3 변환
+                        </button>
+                        <button id="filesTab" onclick="switchTab('files')"
+                                class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 text-sm font-medium">
+                            파일 목록
+                        </button>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- 변환 탭 콘텐츠 -->
+            <div id="convertContent" class="tab-content">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <h2 class="text-xl font-semibold mb-4">YouTube MP3 변환</h2>
+                <form id="testForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">YouTube URL</label>
+                        <input type="url" id="url" placeholder="https://youtu.be/VIDEO_ID" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">시작 시간</label>
+                            <div class="relative">
+                                <input type="text" id="start" placeholder="예: 30:45 또는 1:30:45" 
+                                       inputmode="numeric" pattern="[0-9:]*"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button type="button" onclick="showTimeHelper('start')" 
+                                        class="absolute right-2 top-2 text-blue-600 hover:text-blue-800 text-sm">
+                                    📱
+                                </button>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">형식: MM:SS 또는 HH:MM:SS</p>
+                            <div id="startError" class="text-red-500 text-xs mt-1 hidden">올바른 시간 형식을 입력하세요</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">종료 시간</label>
+                            <div class="relative">
+                                <input type="text" id="end" placeholder="예: 45:30 또는 2:00:00" 
+                                       inputmode="numeric" pattern="[0-9:]*"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button type="button" onclick="showTimeHelper('end')" 
+                                        class="absolute right-2 top-2 text-blue-600 hover:text-blue-800 text-sm">
+                                    📱
+                                </button>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">형식: MM:SS 또는 HH:MM:SS</p>
+                            <div id="endError" class="text-red-500 text-xs mt-1 hidden">올바른 시간 형식을 입력하세요</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">제목 (선택)</label>
+                        <input type="text" id="title" placeholder="my_audio" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        MP3 변환 시작
+                    </button>
+                </form>
+                
+                <div id="result" class="mt-4 hidden">
+                                    <div id="loading" class="text-center py-4 hidden">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p class="mt-2 text-gray-600">변환 중입니다... 잠시만 기다려주세요.</p>
+                    
+                    <!-- 프로그레스 바 -->
+                    <div class="mt-4 w-full bg-gray-200 rounded-full h-2.5">
+                        <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">
+                        <span id="progressText">변환 준비 중...</span>
+                        <span id="progressPercent" class="float-right">0%</span>
+                    </div>
+                </div>
+                    
+                    <div id="success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded hidden">
+                        <h3 class="font-semibold">변환 완료!</h3>
+                        <p id="successMessage"></p>
+                        <div class="mt-2">
+                            <button id="downloadButton" onclick="downloadResult()" class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                                MP3 다운로드
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded hidden">
+                        <h3 class="font-semibold">오류 발생</h3>
+                        <p id="errorMessage"></p>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <!-- 파일 목록 탭 콘텐츠 -->
+            <div id="filesContent" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold text-gray-800">생성된 MP3 파일 목록</h2>
+                        <button onclick="refreshFiles()" 
+                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            새로고침
+                        </button>
+                    </div>
+                    
+                    <div id="filesLoading" class="text-center py-8">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <p class="mt-2 text-gray-600">파일 목록을 불러오는 중...</p>
+                    </div>
+                    
+                    <div id="filesList" class="hidden">
+                        <div id="filesCount" class="mb-4 text-sm text-gray-600"></div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">파일명</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">크기</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">생성일시</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">다운로드</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">재생</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="filesTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- 파일 목록이 여기에 추가됩니다 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div id="noFilesFound" class="text-center py-8 hidden">
+                        <p class="text-gray-500">생성된 MP3 파일이 없습니다.</p>
+                        <button onclick="switchTab('convert')" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                            첫 MP3 생성하기
+                        </button>
+                    </div>
+                    
+                    <div id="filesError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded hidden">
+                        <p>파일 목록을 불러오는 중 오류가 발생했습니다.</p>
+                    </div>
+                </div>
+                
+                <!-- 통계 -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-4">통계</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600" id="statTotalFiles">0</div>
+                            <div class="text-sm text-gray-600">총 파일 수</div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600" id="statTotalSize">0 MB</div>
+                            <div class="text-sm text-gray-600">총 파일 크기</div>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600" id="statLatestFile">-</div>
+                            <div class="text-sm text-gray-600">최근 생성</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAudio = null;
+        let currentTab = 'convert';
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('testForm').addEventListener('submit', handleConvert);
+            
+            // 실시간 시간 검증
+            document.getElementById('start').addEventListener('blur', function() {
+                validateTimeInput('start');
+            });
+            
+            document.getElementById('end').addEventListener('blur', function() {
+                validateTimeInput('end');
+            });
+            
+            // 입력 중 에러 메시지 숨기기
+            document.getElementById('start').addEventListener('input', function() {
+                hideTimeError('start');
+            });
+            
+            document.getElementById('end').addEventListener('input', function() {
+                hideTimeError('end');
+            });
+        });
+
+        // 시간 입력 검증
+        function validateTimeInput(inputId) {
+            const input = document.getElementById(inputId);
+            const errorDiv = document.getElementById(inputId + 'Error');
+            const value = input.value.trim();
+            
+            if (value && !isValidTimeFormat(value)) {
+                input.classList.add('border-red-500', 'focus:ring-red-500');
+                input.classList.remove('border-gray-300', 'focus:ring-blue-500');
+                errorDiv.classList.remove('hidden');
+                return false;
+            } else {
+                input.classList.remove('border-red-500', 'focus:ring-red-500');
+                input.classList.add('border-gray-300', 'focus:ring-blue-500');
+                errorDiv.classList.add('hidden');
+                return true;
+            }
+        }
+
+        // 시간 에러 메시지 숨기기
+        function hideTimeError(inputId) {
+            const input = document.getElementById(inputId);
+            const errorDiv = document.getElementById(inputId + 'Error');
+            
+            input.classList.remove('border-red-500', 'focus:ring-red-500');
+            input.classList.add('border-gray-300', 'focus:ring-blue-500');
+            errorDiv.classList.add('hidden');
+        }
+
+        // 탭 전환
+        function switchTab(tab) {
+            // 탭 버튼 스타일 변경
+            document.getElementById('convertTab').className = 
+                tab === 'convert' ? 
+                'border-b-2 border-blue-500 text-blue-600 py-4 px-1 text-sm font-medium' :
+                'border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 text-sm font-medium';
+            
+            document.getElementById('filesTab').className = 
+                tab === 'files' ? 
+                'border-b-2 border-blue-500 text-blue-600 py-4 px-1 text-sm font-medium' :
+                'border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 text-sm font-medium';
+
+            // 탭 콘텐츠 표시/숨김
+            document.getElementById('convertContent').classList.toggle('hidden', tab !== 'convert');
+            document.getElementById('filesContent').classList.toggle('hidden', tab !== 'files');
+
+            currentTab = tab;
+
+            // 파일 탭으로 전환 시 파일 목록 로드
+            if (tab === 'files') {
+                loadFiles();
+            }
+        }
+
+        // MP3 변환 처리
+        async function handleConvert(e) {
+            e.preventDefault();
+            
+            const url = document.getElementById('url').value;
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+            const title = document.getElementById('title').value;
+            
+            if (!url || !start || !end) {
+                alert('URL, 시작시간, 종료시간은 필수입니다.');
+                return;
+            }
+
+            // 시간 형식 유효성 검사
+            const startValid = validateTimeInput('start');
+            const endValid = validateTimeInput('end');
+            
+            if (!startValid || !endValid) {
+                alert('시간 형식을 확인해주세요.\n지원 형식:\n• MM:SS (예: 30:45)\n• HH:MM:SS (예: 1:30:45)\n초는 0-59 사이여야 합니다.');
+                return;
+            }
+
+            // 시간을 ffmpeg 호환 형식으로 정규화
+            console.log('모바일 디버깅 - 원본 시간:', { start, end });
+            const normalizedStart = normalizeTime(start);
+            const normalizedEnd = normalizeTime(end);
+            console.log('모바일 디버깅 - 정규화된 시간:', { normalizedStart, normalizedEnd });
+
+            // 시간 범위 검증
+            const startSeconds = timeToSeconds(normalizedStart);
+            const endSeconds = timeToSeconds(normalizedEnd);
+            console.log('모바일 디버깅 - 초 변환:', { startSeconds, endSeconds });
+            
+            if (endSeconds <= startSeconds) {
+                alert(`종료 시간이 시작 시간보다 늦어야 합니다.\n시작: ${normalizedStart} (${startSeconds}초)\n종료: ${normalizedEnd} (${endSeconds}초)`);
+                return;
+            }
+
+            const durationMinutes = Math.round((endSeconds - startSeconds) / 60);
+            if (durationMinutes > 120) { // 2시간 제한
+                if (!confirm(`선택한 구간이 ${durationMinutes}분입니다.\n긴 구간은 처리 시간이 오래 걸릴 수 있습니다.\n계속하시겠습니까?`)) {
+                    return;
+                }
+            }
+            
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            const successDiv = document.getElementById('success');
+            const errorDiv = document.getElementById('error');
+            
+            // 초기화
+            resultDiv.classList.remove('hidden');
+            loadingDiv.classList.remove('hidden');
+            successDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            
+            // 프로그레스 바 시작
+            updateProgress(0, '변환 준비 중...');
+            simulateProgress();
+            
+            try {
+                const response = await fetch('/api/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        url, 
+                        start: normalizedStart, 
+                        end: normalizedEnd, 
+                        title 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.jobId) {
+                    // 실시간 진행상황 모니터링 시작
+                    monitorProgress(data.jobId);
+                } else {
+                    loadingDiv.classList.add('hidden');
+                    document.getElementById('errorMessage').textContent = data.error || '요청 처리 중 오류가 발생했습니다.';
+                    errorDiv.classList.remove('hidden');
+                }
+                
+            } catch (error) {
+                loadingDiv.classList.add('hidden');
+                document.getElementById('errorMessage').textContent = '네트워크 오류가 발생했습니다.';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // 파일 목록 로드
+        async function loadFiles() {
+            try {
+                showFilesLoading();
+                const response = await fetch('/api/files');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayFiles(data.files);
+                    updateStatistics(data.files);
+                } else {
+                    showFilesError();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showFilesError();
+            }
+        }
+
+        // 파일 목록 표시
+        function displayFiles(files) {
+            const loadingDiv = document.getElementById('filesLoading');
+            const listDiv = document.getElementById('filesList');
+            const noFilesDiv = document.getElementById('noFilesFound');
+            const errorDiv = document.getElementById('filesError');
+            const tableBody = document.getElementById('filesTableBody');
+            const countDiv = document.getElementById('filesCount');
+
+            loadingDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+
+            if (files.length === 0) {
+                listDiv.classList.add('hidden');
+                noFilesDiv.classList.remove('hidden');
+                return;
+            }
+
+            noFilesDiv.classList.add('hidden');
+            listDiv.classList.remove('hidden');
+            
+            countDiv.textContent = `총 ${files.length}개의 MP3 파일`;
+            
+            tableBody.innerHTML = '';
+            
+            files.forEach(file => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                // 파일명 길이를 20% 줄임 (기존 50자 -> 40자)
+                const fileName = file.fileName.length > 40 ? 
+                    file.fileName.substring(0, 40) + '...' : file.fileName;
+                
+                const fileSize = (file.fileSize / 1024 / 1024).toFixed(2);
+                const createdDate = new Date(file.createdAt).toLocaleString('ko-KR');
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-900" title="${file.fileName}">
+                        ${fileName}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        ${fileSize} MB
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900">
+                        ${createdDate}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <button onclick="downloadFile('${file.downloadUrl}', '${file.fileName}')"
+                                class="inline-flex items-center px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                            다운로드
+                        </button>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <button onclick="togglePlay('${file.downloadUrl}', this)" 
+                                class="inline-flex items-center px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                            재생
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 통계 업데이트
+        function updateStatistics(files) {
+            const totalFiles = files.length;
+            const totalSize = files.reduce((sum, file) => sum + file.fileSize, 0);
+            const latestFile = files.length > 0 ? 
+                new Date(files[0].createdAt).toLocaleDateString('ko-KR') : '-';
+
+            document.getElementById('statTotalFiles').textContent = totalFiles;
+            document.getElementById('statTotalSize').textContent = (totalSize / 1024 / 1024).toFixed(2) + ' MB';
+            document.getElementById('statLatestFile').textContent = latestFile;
+        }
+
+        // MP3 재생/정지
+        function togglePlay(url, button) {
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+                resetAllPlayButtons();
+                return;
+            }
+
+            if (currentAudio) {
+                currentAudio.pause();
+                resetAllPlayButtons();
+            }
+
+            try {
+                // 현재 프로토콜과 호스트 사용
+                const currentProtocol = window.location.protocol;
+                const currentHost = window.location.host;
+                const urlFileName = url.split('/').pop();
+                
+                let audioUrl = url;
+                if (url.includes(window.location.hostname)) {
+                    // 오디오 전용 엔드포인트 사용
+                    audioUrl = `${currentProtocol}//${currentHost}/audio/${urlFileName}`;
+                }
+                
+                console.log('재생 URL:', audioUrl);
+                
+                currentAudio = new Audio();
+                currentAudio.preload = 'metadata';
+                currentAudio.crossOrigin = 'anonymous';
+                
+                // 로딩 상태 표시
+                button.textContent = '로딩중...';
+                button.disabled = true;
+                
+                currentAudio.addEventListener('loadstart', () => {
+                    console.log('오디오 로딩 시작');
+                });
+                
+                currentAudio.addEventListener('canplay', () => {
+                    console.log('오디오 재생 준비 완료');
+                    button.textContent = '정지';
+                    button.disabled = false;
+                    
+                    currentAudio.play().catch(error => {
+                        console.error('재생 오류:', error);
+                        button.textContent = '재생';
+                        button.disabled = false;
+                        alert(`MP3 재생 중 오류가 발생했습니다: ${error.message}`);
+                    });
+                });
+                
+                currentAudio.addEventListener('error', (e) => {
+                    console.error('오디오 로드 오류:', e, currentAudio.error);
+                    button.textContent = '재생';
+                    button.disabled = false;
+                    
+                    let errorMsg = 'MP3 파일을 로드할 수 없습니다.';
+                    if (currentAudio.error) {
+                        switch(currentAudio.error.code) {
+                            case currentAudio.error.MEDIA_ERR_NETWORK:
+                                errorMsg = '네트워크 오류로 재생할 수 없습니다.';
+                                break;
+                            case currentAudio.error.MEDIA_ERR_DECODE:
+                                errorMsg = 'MP3 파일이 손상되었습니다.';
+                                break;
+                            case currentAudio.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                                errorMsg = '지원하지 않는 파일 형식입니다.';
+                                break;
+                        }
+                    }
+                    alert(errorMsg);
+                });
+
+                currentAudio.onended = () => {
+                    resetAllPlayButtons();
+                };
+                
+                // 오디오 소스 설정 및 로드
+                currentAudio.src = audioUrl;
+                currentAudio.load();
+                
+            } catch (error) {
+                console.error('재생 초기화 오류:', error);
+                button.textContent = '재생';
+                button.disabled = false;
+                alert(`재생 중 오류가 발생했습니다: ${error.message}`);
+            }
+        }
+
+        // 모든 재생 버튼 초기화
+        function resetAllPlayButtons() {
+            const playButtons = document.querySelectorAll('button[onclick*="togglePlay"]');
+            playButtons.forEach(button => {
+                button.textContent = '재생';
+                button.disabled = false;
+            });
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+        }
+
+        // 파일 목록 새로고침
+        function refreshFiles() {
+            if (currentTab === 'files') {
+                loadFiles();
+            }
+        }
+
+        // 로딩 표시
+        function showFilesLoading() {
+            document.getElementById('filesLoading').classList.remove('hidden');
+            document.getElementById('filesList').classList.add('hidden');
+            document.getElementById('noFilesFound').classList.add('hidden');
+            document.getElementById('filesError').classList.add('hidden');
+        }
+
+        // 오류 표시
+        function showFilesError() {
+            document.getElementById('filesLoading').classList.add('hidden');
+            document.getElementById('filesList').classList.add('hidden');
+            document.getElementById('noFilesFound').classList.add('hidden');
+            document.getElementById('filesError').classList.remove('hidden');
+        }
+
+        // 보안 다운로드 함수
+        async function downloadFile(url, fileName) {
+            try {
+                // 현재 도메인 사용 (프로토콜 자동 매칭)
+                const currentProtocol = window.location.protocol;
+                const currentHost = window.location.host;
+                
+                // URL에서 파일명 추출
+                const urlFileName = url.split('/').pop();
+                let downloadUrl = url;
+                
+                // 같은 도메인인 경우 현재 프로토콜 사용
+                if (url.includes(window.location.hostname)) {
+                    downloadUrl = `${currentProtocol}//${currentHost}/uploads/${urlFileName}`;
+                }
+                
+                console.log('다운로드 URL:', downloadUrl);
+                
+                const response = await fetch(downloadUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'audio/mpeg,*/*'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = fileName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // 메모리 정리
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(blobUrl);
+                }, 1000);
+                
+            } catch (error) {
+                console.error('다운로드 오류:', error);
+                alert(`다운로드 중 오류가 발생했습니다: ${error.message}`);
+            }
+        }
+
+        // 변환 결과 다운로드
+        let resultDownloadUrl = '';
+        let resultFileName = '';
+        
+        function downloadResult() {
+            if (resultDownloadUrl && resultFileName) {
+                downloadFile(resultDownloadUrl, resultFileName);
+            }
+        }
+
+                // 시간 형식 유효성 검사 (강화된 버전 + 모바일 지원)
+        function isValidTimeFormat(time) {
+            if (!time || typeof time !== 'string') {
+                console.log('시간 검증 실패: 빈 값 또는 문자열이 아님', time);
+                return false;
+            }
+            
+            // 공백 제거
+            time = time.trim();
+            
+            // 지원하는 패턴들
+            const patterns = [
+                // HH:MM:SS 형식 (시:분:초)
+                /^([0-9]|[0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/,
+                // MM:SS 형식 (분:초)
+                /^([0-5]?[0-9]):([0-5][0-9])$/,
+                // H:MM:SS 형식 (한 자리 시간)
+                /^([0-9]):([0-5][0-9]):([0-5][0-9])$/,
+                // 유연한 형식들 (모바일에서 자주 발생)
+                /^([0-9]{1,2}):([0-9]{1,2})$/,        // M:S 또는 MM:S 또는 M:SS
+                /^([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})$/ // H:M:S 등
+            ];
+            
+            for (let pattern of patterns) {
+                const match = time.match(pattern);
+                if (match) {
+                    // 추가 검증: 분과 초가 60 미만인지 확인
+                    const parts = time.split(':').map(num => parseInt(num));
+                    
+                    if (parts.length === 3) { // HH:MM:SS
+                        const [hours, minutes, seconds] = parts;
+                        const valid = hours >= 0 && hours <= 23 &&
+                                      minutes >= 0 && minutes <= 59 &&
+                                      seconds >= 0 && seconds <= 59;
+                        if (!valid) {
+                            console.log('시간 검증 실패: 범위 초과', { hours, minutes, seconds });
+                        }
+                        return valid;
+                    } else if (parts.length === 2) { // MM:SS
+                        const [minutes, seconds] = parts;
+                        const valid = minutes >= 0 && minutes <= 999 && // 긴 동영상을 위해 분은 제한 완화
+                                      seconds >= 0 && seconds <= 59;
+                        if (!valid) {
+                            console.log('시간 검증 실패: 범위 초과', { minutes, seconds });
+                        }
+                        return valid;
+                    }
+                }
+            }
+            
+            console.log('시간 검증 실패: 패턴 불일치', time);
+            return false;
+        }
+
+        // 시간을 ffmpeg 호환 형식으로 정규화 (모바일 지원 강화)
+        function normalizeTime(time) {
+            if (!time) return '0:00:00';
+            
+            time = time.trim();
+            const parts = time.split(':').map(part => parseInt(part) || 0);
+            
+            console.log('시간 정규화 입력:', time, '파싱된 부분:', parts);
+            
+            if (parts.length === 2) {
+                // MM:SS -> HH:MM:SS (0:MM:SS)
+                const [minutes, seconds] = parts;
+                const normalizedSeconds = Math.min(59, Math.max(0, seconds));
+                const result = `0:${minutes.toString().padStart(2, '0')}:${normalizedSeconds.toString().padStart(2, '0')}`;
+                console.log('시간 정규화 결과 (MM:SS):', result);
+                return result;
+            } else if (parts.length === 3) {
+                // HH:MM:SS -> HH:MM:SS (패딩)
+                const [hours, minutes, seconds] = parts;
+                const normalizedHours = Math.max(0, hours);
+                const normalizedMinutes = Math.min(59, Math.max(0, minutes));
+                const normalizedSeconds = Math.min(59, Math.max(0, seconds));
+                const result = `${normalizedHours}:${normalizedMinutes.toString().padStart(2, '0')}:${normalizedSeconds.toString().padStart(2, '0')}`;
+                console.log('시간 정규화 결과 (HH:MM:SS):', result);
+                return result;
+            } else if (parts.length === 1) {
+                // 단일 숫자인 경우 초로 간주
+                const seconds = parts[0];
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                const result = `0:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+                console.log('시간 정규화 결과 (초만):', result);
+                return result;
+            }
+            
+            console.log('시간 정규화 실패, 원본 반환:', time);
+            return time;
+        }
+
+        // 시간을 초 단위로 변환
+        function timeToSeconds(timeStr) {
+            const parts = timeStr.split(':').map(num => parseInt(num));
+            if (parts.length === 3) {
+                const [hours, minutes, seconds] = parts;
+                return hours * 3600 + minutes * 60 + seconds;
+            }
+            return 0;
+        }
+
+        // 초를 시간 형식으로 변환
+        function secondsToTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 프로그레스 바 업데이트
+        function updateProgress(percent, text) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressPercent = document.getElementById('progressPercent');
+            
+            if (progressBar) progressBar.style.width = percent + '%';
+            if (progressText) progressText.textContent = text;
+            if (progressPercent) progressPercent.textContent = Math.round(percent) + '%';
+        }
+
+        // 프로그레스 시뮬레이션 (실제 진행률을 추정)
+        function simulateProgress() {
+            let progress = 0;
+            const steps = [
+                { progress: 10, text: 'YouTube 연결 중...', delay: 500 },
+                { progress: 30, text: '비디오 정보 수집 중...', delay: 1000 },
+                { progress: 50, text: '오디오 다운로드 중...', delay: 3000 },
+                { progress: 80, text: 'MP3 변환 중...', delay: 2000 },
+                { progress: 95, text: '구간 자르기 중...', delay: 1000 }
+            ];
+
+            let currentStep = 0;
+            
+            function nextStep() {
+                if (currentStep < steps.length) {
+                    const step = steps[currentStep];
+                    updateProgress(step.progress, step.text);
+                    currentStep++;
+                    setTimeout(nextStep, step.delay);
+                }
+            }
+            
+            nextStep();
+        }
+
+        // 모바일 친화적 시간 입력 도우미
+        function showTimeHelper(inputId) {
+            const minutes = prompt('분을 입력하세요 (0-999):');
+            if (minutes === null) return;
+            
+            const seconds = prompt('초를 입력하세요 (0-59):');
+            if (seconds === null) return;
+            
+            const minutesNum = parseInt(minutes) || 0;
+            const secondsNum = parseInt(seconds) || 0;
+            
+            if (minutesNum < 0 || secondsNum < 0 || secondsNum > 59) {
+                alert('올바른 숫자를 입력해주세요.\n분: 0 이상\n초: 0-59');
+                return;
+            }
+            
+            const timeString = `${minutesNum}:${secondsNum.toString().padStart(2, '0')}`;
+            document.getElementById(inputId).value = timeString;
+            
+            // 검증 트리거
+            validateTimeInput(inputId);
+        }
+
+        // 실시간 진행상황 모니터링
+        function monitorProgress(jobId) {
+            console.log('진행상황 모니터링 시작:', jobId);
+            
+            const eventSource = new EventSource(`/api/progress/${jobId}`);
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('진행상황 업데이트:', data);
+                    
+                    switch(data.type) {
+                        case 'connected':
+                            updateProgress(0, '연결됨');
+                            break;
+                            
+                        case 'started':
+                            updateProgress(data.progress || 0, data.message || '시작됨');
+                            break;
+                            
+                        case 'progress':
+                            updateProgress(data.progress || 0, data.message || '진행 중...');
+                            break;
+                            
+                        case 'completed':
+                            updateProgress(100, '완료!');
+                            setTimeout(() => {
+                                const loadingDiv = document.getElementById('loading');
+                                const successDiv = document.getElementById('success');
+                                
+                                loadingDiv.classList.add('hidden');
+                                document.getElementById('successMessage').textContent = 
+                                    `파일: ${data.fileName} (${(data.fileSize / 1024 / 1024).toFixed(2)} MB)`;
+                                
+                                // 다운로드 정보 저장
+                                resultDownloadUrl = data.downloadUrl;
+                                resultFileName = data.fileName;
+                                
+                                successDiv.classList.remove('hidden');
+                                eventSource.close();
+                            }, 1000);
+                            break;
+                            
+                        case 'error':
+                            const loadingDiv = document.getElementById('loading');
+                            const errorDiv = document.getElementById('error');
+                            
+                            loadingDiv.classList.add('hidden');
+                            document.getElementById('errorMessage').textContent = data.message || '오류가 발생했습니다.';
+                            errorDiv.classList.remove('hidden');
+                            eventSource.close();
+                            break;
+                    }
+                } catch (error) {
+                    console.error('진행상황 파싱 오류:', error);
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                console.error('SSE 연결 오류:', event);
+                const loadingDiv = document.getElementById('loading');
+                const errorDiv = document.getElementById('error');
+                
+                loadingDiv.classList.add('hidden');
+                document.getElementById('errorMessage').textContent = '연결이 끊어졌습니다. 다시 시도해주세요.';
+                errorDiv.classList.remove('hidden');
+                eventSource.close();
+            };
+        }
+    </script>
+</body>
+</html>

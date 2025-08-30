@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>설교 관리 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- 헤더 -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-6">
+                    <h1 class="text-3xl font-bold text-gray-900">설교 관리 시스템</h1>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-500">포트: 9899</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- 탭 네비게이션 -->
+            <div class="border-b border-gray-200 mb-8">
+                <nav class="-mb-px flex space-x-8">
+                    <button id="tab1" class="tab-button py-2 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600">
+                        YouTube MP3 추출
+                    </button>
+                    <button id="tab2" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        설교 게시판
+                    </button>
+                </nav>
+            </div>
+
+            <!-- 탭 1: YouTube MP3 추출 -->
+            <div id="tab1-content" class="tab-content">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">YouTube에서 MP3 추출</h2>
+                    
+                    <form id="extractForm" class="space-y-6">
+                        <div>
+                            <label for="youtubeUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                                교회 YouTube 링크
+                            </label>
+                            <input type="url" id="youtubeUrl" name="youtubeUrl" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="https://www.youtube.com/watch?v=...">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="startTime" class="block text-sm font-medium text-gray-700 mb-2">
+                                    시작 시간 (HH:MM:SS)
+                                </label>
+                                <input type="text" id="startTime" name="startTime" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="00:00:00">
+                            </div>
+                            <div>
+                                <label for="endTime" class="block text-sm font-medium text-gray-700 mb-2">
+                                    종료 시간 (HH:MM:SS)
+                                </label>
+                                <input type="text" id="endTime" name="endTime" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="00:00:00">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                                설교 제목 (선택사항)
+                            </label>
+                            <input type="text" id="title" name="title"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="설교 제목을 입력하세요">
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <button type="submit" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                MP3 추출 시작
+                            </button>
+                            <div id="extractStatus" class="text-sm text-gray-600"></div>
+                        </div>
+                    </form>
+
+                    <div id="extractResult" class="mt-6 hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-md p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i data-feather="check-circle" class="h-5 w-5 text-green-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-green-800">추출 완료</h3>
+                                    <div class="mt-2 text-sm text-green-700">
+                                        <p id="resultMessage"></p>
+                                        <p id="resultFileName" class="mt-1"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 탭 2: 설교 게시판 -->
+            <div id="tab2-content" class="tab-content hidden">
+                <div class="bg-white shadow rounded-lg">
+                    <!-- 게시판 헤더 -->
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-semibold text-gray-900">설교 게시판</h2>
+                            <button id="addSermonBtn" 
+                                class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                                설교 추가
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 설교 목록 테이블 -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">날짜</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">설교 제목</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">음성인식 텍스트</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MP3</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작업</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sermonTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- 설교 목록이 여기에 동적으로 로드됩니다 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 페이지네이션 -->
+                    <div id="pagination" class="px-6 py-4 border-t border-gray-200">
+                        <!-- 페이지네이션이 여기에 동적으로 로드됩니다 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 설교 추가/수정 모달 -->
+    <div id="sermonModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 id="modalTitle" class="text-lg font-medium text-gray-900 mb-4">설교 추가</h3>
+                <form id="sermonForm" class="space-y-4">
+                    <input type="hidden" id="sermonId" name="sermonId">
+                    
+                    <div>
+                        <label for="modalTitle" class="block text-sm font-medium text-gray-700 mb-1">설교 제목</label>
+                        <input type="text" id="modalTitleInput" name="modalTitle" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="modalDate" class="block text-sm font-medium text-gray-700 mb-1">날짜</label>
+                        <input type="date" id="modalDate" name="modalDate" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="modalMp3File" class="block text-sm font-medium text-gray-700 mb-1">MP3 파일</label>
+                        <input type="text" id="modalMp3File" name="modalMp3File" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="MP3 파일 경로 또는 URL">
+                    </div>
+
+                    <div>
+                        <label for="modalTxtFile" class="block text-sm font-medium text-gray-700 mb-1">음성인식 텍스트 파일</label>
+                        <input type="text" id="modalTxtFile" name="modalTxtFile" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="텍스트 파일 경로 또는 URL">
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" id="cancelBtn"
+                            class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            취소
+                        </button>
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
