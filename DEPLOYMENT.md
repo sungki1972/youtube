@@ -147,3 +147,4 @@ ALTER TABLE serm ADD COLUMN new_field TEXT;
 2. 로그 파일 확인
 3. 환경변수 재확인
 4. 의존성 버전 확인
+
