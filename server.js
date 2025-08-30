@@ -8,6 +8,7 @@ const fs = require('fs');
 const https = require('https');
 const http = require('http');
 const { createClient } = require('@supabase/supabase-js');
+const { Client } = require('basic-ftp');
 
 const app = express();
 const PORT = process.env.PORT || 9899;
@@ -21,6 +22,125 @@ if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// FTP 설정
+const ftpConfig = {
+    host: process.env.FTP_HOST,
+    user: process.env.FTP_USER,
+    password: process.env.FTP_PASS,
+    port: process.env.FTP_PORT ? parseInt(process.env.FTP_PORT) : 21,
+    secure: false // true for FTPS
+};
+
+// 백그라운드 작업 큐
+const backgroundJobs = new Map();
+
+// FTP 업로드 함수
+async function uploadToFTP(localFilePath, remoteFileName) {
+    if (!ftpConfig.host || !ftpConfig.user || !ftpConfig.password) {
+        console.log('FTP 설정이 없어서 업로드를 건너뜁니다.');
+        return null;
+    }
+    
+    const client = new Client();
+    try {
+        await client.access(ftpConfig);
+        console.log('FTP 연결 성공');
+        
+        const remotePath = path.posix.join(process.env.FTP_PATH || '/sermon/', remoteFileName);
+        await client.uploadFrom(localFilePath, remotePath);
+        console.log(`FTP 업로드 완료: ${remotePath}`);
+        
+        const ftpUrl = `https://${ftpConfig.host}${remotePath}`;
+        return ftpUrl;
+    } catch (error) {
+        console.error('FTP 업로드 오류:', error);
+        return null;
+    } finally {
+        client.close();
+    }
+}
+
+// YouTube 제목 추출 함수 (한글 인코딩 지원)
+async function getYouTubeTitle(youtubeUrl) {
+    return new Promise((resolve) => {
+        const ytProcess = spawn('yt-dlp', ['--get-title', '--encoding', 'utf-8', youtubeUrl], {
+            stdio: ['ignore', 'pipe', 'pipe'],
+            env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
+        });
+        
+        let title = '';
+        ytProcess.stdout.on('data', (data) => {
+            try {
+                // UTF-8로 디코딩
+                title += data.toString('utf8').trim();
+            } catch (error) {
+                console.error('제목 디코딩 오류:', error);
+                title += data.toString().trim();
+            }
+        });
+        
+        ytProcess.on('close', (code) => {
+            if (code === 0 && title) {
+                console.log('원본 YouTube 제목:', title);
+                
+                // 한글과 영문만 허용, 특수문자 제거
+                let cleanTitle = title
+                    .replace(/[<>:"/\\|?*]/g, '_')  // 파일명 금지 문자
+                    .replace(/[^\w\s가-힣ㄱ-ㅎㅏ-ㅣ]/g, '_')  // 한글, 영문, 숫자, 공백만 허용
+                    .replace(/\s+/g, '_')  // 공백을 언더스코어로
+                    .replace(/_+/g, '_')   // 연속된 언더스코어 정리
+                    .substring(0, 50);     // 길이 제한
+                
+                // 앞뒤 언더스코어 제거
+                cleanTitle = cleanTitle.replace(/^_+|_+$/g, '');
+                
+                // 빈 문자열이면 기본값 사용
+                if (!cleanTitle || cleanTitle.length === 0) {
+                    cleanTitle = 'youtube_video';
+                }
+                
+                console.log('정리된 제목:', cleanTitle);
+                resolve(cleanTitle);
+            } else {
+                resolve('youtube_video');
+            }
+        });
+        
+        ytProcess.on('error', (error) => {
+            console.error('yt-dlp 제목 추출 오류:', error);
+            resolve('youtube_video');
+        });
+    });
+}
+
+// Supabase에 설교 정보 자동 저장
+async function saveToSupabase(fileName, title, mp3Url, duration) {
+    try {
+        if (supabaseUrl === 'your-supabase-url' || supabaseKey === 'your-supabase-anon-key') {
+            console.log('Supabase 설정이 없어서 저장을 건너뜁니다.');
+            return;
+        }
+        
+        const { data, error } = await supabase
+            .from('serm')
+            .insert([{
+                title: title || fileName,
+                date: new Date().toISOString().split('T')[0],
+                mp3_file: mp3Url,
+                txt_file: '', // 필요시 음성인식 텍스트 파일 URL
+                created_at: new Date().toISOString()
+            }]);
+            
+        if (error) {
+            console.error('Supabase 저장 오류:', error);
+        } else {
+            console.log('Supabase 저장 완료:', title);
+        }
+    } catch (error) {
+        console.error('Supabase 저장 중 오류:', error);
+    }
+}
 
 // HTTPS 리다이렉트 미들웨어 (프로덕션 환경에서)
 app.use((req, res, next) => {
@@ -142,13 +262,16 @@ function secondsToTime(seconds) {
     return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-// MP3 추출 공통 함수
+// MP3 추출 공통 함수 (개선된 버전)
 async function handleMp3Extraction(req, res, { youtubeUrl, startTime, endTime, title }) {
     const jobId = Date.now().toString();
     
     try {
-        // 시간 형식 검증
-        if (!isValidTimeFormat(startTime) || !isValidTimeFormat(endTime)) {
+        // 전체 비디오 처리인지 확인 (시간이 빈 값인 경우)
+        const isFullVideo = !startTime || !endTime || startTime.trim() === '' || endTime.trim() === '';
+        
+        // 시간 형식 검증 (전체 비디오가 아닌 경우에만)
+        if (!isFullVideo && (!isValidTimeFormat(startTime) || !isValidTimeFormat(endTime))) {
             return res.status(400).json({ 
                 error: '시간 형식이 올바르지 않습니다. HH:MM:SS 형식을 사용해주세요.' 
             });
@@ -162,14 +285,21 @@ async function handleMp3Extraction(req, res, { youtubeUrl, startTime, endTime, t
             });
         }
 
+        // YouTube 제목 자동 추출 (제목이 빈 경우)
+        let finalTitle = title;
+        if (!title || title.trim() === '') {
+            console.log('제목이 비어있어서 YouTube 제목을 추출합니다...');
+            finalTitle = await getYouTubeTitle(youtubeUrl);
+            console.log(`추출된 YouTube 제목: ${finalTitle}`);
+        }
+
         // 파일명에서 특수문자 제거
-        const sanitizedTitle = (title || 'sermon').replace(/[<>:"/\\|?*]/g, '_').substring(0, 50);
+        const sanitizedTitle = (finalTitle || 'sermon').replace(/[<>:"/\\|?*]/g, '_').substring(0, 50);
         const fileName = `${Date.now()}_${sanitizedTitle}.mp3`;
         const outputPath = path.join(uploadDir, fileName);
-        const tempFile = path.join(uploadDir, `temp_${Date.now()}.mp3`);
 
         console.log(`다운로드 시작: ${youtubeUrl} (Job ID: ${jobId})`);
-        console.log(`임시 파일: ${tempFile}`);
+        console.log(`전체 비디오: ${isFullVideo}`);
         console.log(`최종 파일: ${outputPath}`);
 
         // 진행상황 초기화
@@ -180,41 +310,78 @@ async function handleMp3Extraction(req, res, { youtubeUrl, startTime, endTime, t
             progress: 0
         });
 
-        // 즉시 jobId 응답
+        // 즉시 jobId 응답 - 창을 닫아도 계속 처리됨
         res.json({
             success: true,
             jobId: jobId,
-            message: '다운로드가 시작되었습니다. 진행상황을 확인하세요.',
-            progressUrl: `/api/progress/${jobId}`
+            message: '다운로드가 백그라운드에서 시작되었습니다. 창을 닫아도 계속 처리됩니다.',
+            progressUrl: `/api/progress/${jobId}`,
+            fileName: fileName
         });
 
-        // 단계별 실행: yt-dlp --download-sections 옵션으로 구간 직접 다운로드
-        const sectionRange = `*${startTime}-${endTime}`;
-        console.log(`다운로드 구간: ${sectionRange}`);
+        // 백그라운드 작업으로 등록
+        backgroundJobs.set(jobId, {
+            status: 'processing',
+            fileName: fileName,
+            title: finalTitle,
+            startTime: new Date()
+        });
+
+        // 백그라운드에서 비동기 처리 시작
+        processMP3InBackground(jobId, youtubeUrl, startTime, endTime, isFullVideo, outputPath, fileName, finalTitle);
+
+    } catch (error) {
+        console.error('Error:', error);
+        broadcastProgress(jobId, {
+            type: 'error',
+            stage: 'failed',
+            message: '서버 오류가 발생했습니다.',
+            error: error.message
+        });
+        if (!res.headersSent) {
+            res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+        }
+    }
+}
+
+// 백그라운드 MP3 처리 함수
+async function processMP3InBackground(jobId, youtubeUrl, startTime, endTime, isFullVideo, outputPath, fileName, finalTitle) {
+    try {
+        console.log(`백그라운드 처리 시작: ${jobId}`);
+        
+        // yt-dlp 명령어 구성
+        let args = [
+            '-x',
+            '--audio-format', 'mp3',
+            '--audio-quality', '0',
+            '--progress',
+            '--newline',
+            '-o', outputPath
+        ];
+
+        // 구간 지정 또는 전체 비디오
+        if (!isFullVideo) {
+            const sectionRange = `*${startTime}-${endTime}`;
+            args.push('--download-sections', sectionRange);
+            console.log(`다운로드 구간: ${sectionRange}`);
+        } else {
+            console.log('전체 비디오 다운로드');
+        }
+        
+        args.push(youtubeUrl);
         
         broadcastProgress(jobId, {
             type: 'progress',
             stage: 'downloading',
-            message: '구간 다운로드 중...',
+            message: isFullVideo ? '전체 영상 다운로드 중...' : '구간 다운로드 중...',
             progress: 10
         });
-        
-        // spawn을 사용하여 버퍼 오버플로우 방지
-        const args = [
-            '-x',
-            '--audio-format', 'mp3',
-            '--audio-quality', '0',
-            '--download-sections', sectionRange,
-            '--progress',
-            '--newline',
-            '-o', outputPath,
-            youtubeUrl
-        ];
         
         console.log('yt-dlp 명령어:', 'yt-dlp', args.join(' '));
         
         const childProcess = spawn('yt-dlp', args, {
-            stdio: ['ignore', 'pipe', 'pipe']
+            stdio: ['ignore', 'pipe', 'pipe'],
+            env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
         });
         
         let downloadProgress = 10;
@@ -260,10 +427,8 @@ async function handleMp3Extraction(req, res, { youtubeUrl, startTime, endTime, t
         });
         
         // 프로세스 완료 처리
-        childProcess.on('close', (code) => {
+        childProcess.on('close', async (code) => {
             console.log(`yt-dlp 프로세스 종료 코드: ${code}`);
-            console.log('전체 출력:', outputBuffer);
-            if (errorBuffer) console.log('전체 에러:', errorBuffer);
             
             if (code !== 0) {
                 console.error('Download Error: 프로세스가 비정상 종료됨');
@@ -273,17 +438,11 @@ async function handleMp3Extraction(req, res, { youtubeUrl, startTime, endTime, t
                     message: `다운로드 오류: 프로세스 종료 코드 ${code}`,
                     error: errorBuffer || `프로세스 종료 코드: ${code}`
                 });
+                backgroundJobs.delete(jobId);
                 return;
             }
 
-            broadcastProgress(jobId, {
-                type: 'progress',
-                stage: 'processing',
-                message: '파일 처리 중...',
-                progress: 90
-            });
-
-            // 최종 파일이 생성되었는지 확인
+            // 파일 존재 확인
             if (!fs.existsSync(outputPath)) {
                 console.error('최종 파일이 생성되지 않았습니다:', outputPath);
                 broadcastProgress(jobId, {
@@ -292,32 +451,61 @@ async function handleMp3Extraction(req, res, { youtubeUrl, startTime, endTime, t
                     message: 'MP3 파일 생성에 실패했습니다.',
                     error: 'File generation failed'
                 });
+                backgroundJobs.delete(jobId);
                 return;
             }
 
             const finalFileSize = fs.statSync(outputPath).size;
             console.log(`최종 파일 크기: ${finalFileSize} bytes`);
 
-            // 동적 호스트 및 프로토콜 감지 (HTTPS 우선)
-            const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' || req.headers['x-forwarded-ssl'] === 'on' ? 'https' : 'https'; // 기본적으로 HTTPS 사용
-            const host = req.get('host');
-            
+            // FTP 업로드 진행
+            broadcastProgress(jobId, {
+                type: 'progress',
+                stage: 'uploading',
+                message: 'FTP 업로드 중...',
+                progress: 90
+            });
+
+            const ftpUrl = await uploadToFTP(outputPath, fileName);
+            const finalUrl = ftpUrl || `/uploads/${fileName}`;
+
+            // Supabase 저장
+            broadcastProgress(jobId, {
+                type: 'progress',
+                stage: 'saving',
+                message: 'DB 저장 중...',
+                progress: 95
+            });
+
+            await saveToSupabase(fileName, finalTitle, finalUrl);
+
             // 완료 알림
             broadcastProgress(jobId, {
                 type: 'completed',
                 stage: 'finished',
-                message: 'MP3 구간 다운로드가 완료되었습니다!',
+                message: 'MP3 추출 및 업로드가 완료되었습니다!',
                 progress: 100,
                 fileName: fileName,
                 filePath: `/uploads/${fileName}`,
-                downloadUrl: `${protocol}://${host}/uploads/${fileName}`,
-                fileSize: finalFileSize
+                downloadUrl: finalUrl,
+                fileSize: finalFileSize,
+                ftpUploaded: !!ftpUrl,
+                supabaseSaved: true
             });
 
-            // 5초 후 진행상황 추적 정리
+            // 백그라운드 작업 완료 표시
+            backgroundJobs.set(jobId, {
+                ...backgroundJobs.get(jobId),
+                status: 'completed',
+                endTime: new Date(),
+                downloadUrl: finalUrl
+            });
+
+            // 5분 후 진행상황 추적 정리
             setTimeout(() => {
                 progressTrackers.delete(jobId);
-            }, 5000);
+                backgroundJobs.delete(jobId);
+            }, 300000); // 5분
         });
         
         // 프로세스 에러 처리
@@ -329,28 +517,29 @@ async function handleMp3Extraction(req, res, { youtubeUrl, startTime, endTime, t
                 message: `프로세스 시작 오류: ${error.message}`,
                 error: error.message
             });
+            backgroundJobs.delete(jobId);
         });
 
     } catch (error) {
-        console.error('Error:', error);
+        console.error('백그라운드 처리 오류:', error);
         broadcastProgress(jobId, {
             type: 'error',
             stage: 'failed',
-            message: '서버 오류가 발생했습니다.',
+            message: '백그라운드 처리 중 오류가 발생했습니다.',
             error: error.message
         });
-        if (!res.headersSent) {
-            res.status(500).json({ error: '서버 오류가 발생했습니다.' });
-        }
+        backgroundJobs.delete(jobId);
     }
 }
 
-// YouTube에서 MP3 추출 API (기존)
+
+// YouTube에서 MP3 추출 API (개선된 버전)
 app.post('/api/extract-mp3', async (req, res) => {
     const { youtubeUrl, startTime, endTime, title } = req.body;
     
-    if (!youtubeUrl || !startTime || !endTime) {
-        return res.status(400).json({ error: '필수 파라미터가 누락되었습니다.' });
+    // YouTube URL은 필수, 시간과 제목은 선택사항
+    if (!youtubeUrl) {
+        return res.status(400).json({ error: 'YouTube URL이 필요합니다.' });
     }
 
     return handleMp3Extraction(req, res, { youtubeUrl, startTime, endTime, title });
@@ -489,16 +678,18 @@ app.get('/api/sermons/:id', async (req, res) => {
     }
 });
 
-// 외부 API - 간단한 MP3 추출 (GET 요청 지원)
+// 외부 API - 간단한 MP3 추출 (GET 요청 지원) - 개선된 버전
 app.get('/api/convert', async (req, res) => {
     try {
         const { url, start, end, title } = req.query;
         
-        if (!url || !start || !end) {
+        // URL만 필수, 나머지는 선택사항
+        if (!url) {
             return res.status(400).json({ 
-                error: '필수 파라미터가 누락되었습니다.',
-                required: 'url, start, end',
-                example: '/api/convert?url=https://youtu.be/VIDEO_ID&start=0:30:00&end=1:00:00&title=sermon_title'
+                error: 'YouTube URL이 필요합니다.',
+                required: 'url',
+                example: '/api/convert?url=https://youtu.be/VIDEO_ID&start=0:30:00&end=1:00:00&title=sermon_title',
+                note: 'start, end, title은 선택사항입니다. 빈 값이면 전체 영상을 추출하고 YouTube 제목을 사용합니다.'
             });
         }
 
@@ -507,7 +698,7 @@ app.get('/api/convert', async (req, res) => {
             youtubeUrl: url,
             startTime: start,
             endTime: end,
-            title: title || 'converted_audio'
+            title: title
         });
 
     } catch (error) {
@@ -516,16 +707,18 @@ app.get('/api/convert', async (req, res) => {
     }
 });
 
-// 외부 API - POST 요청으로도 지원
+// 외부 API - POST 요청으로도 지원 - 개선된 버전
 app.post('/api/convert', async (req, res) => {
     try {
         const { url, start, end, title } = req.body;
         
-        if (!url || !start || !end) {
+        // URL만 필수, 나머지는 선택사항
+        if (!url) {
             return res.status(400).json({ 
-                error: '필수 파라미터가 누락되었습니다.',
-                required: 'url, start, end',
-                example: '{"url": "https://youtu.be/VIDEO_ID", "start": "0:30:00", "end": "1:00:00", "title": "sermon_title"}'
+                error: 'YouTube URL이 필요합니다.',
+                required: 'url',
+                example: '{"url": "https://youtu.be/VIDEO_ID", "start": "0:30:00", "end": "1:00:00", "title": "sermon_title"}',
+                note: 'start, end, title은 선택사항입니다. 빈 값이면 전체 영상을 추출하고 YouTube 제목을 사용합니다.'
             });
         }
 
@@ -533,7 +726,7 @@ app.post('/api/convert', async (req, res) => {
             youtubeUrl: url,
             startTime: start,
             endTime: end,
-            title: title || 'converted_audio'
+            title: title
         });
 
     } catch (error) {
@@ -601,19 +794,49 @@ app.get('/api/docs', (req, res) => {
     });
 });
 
+// 백그라운드 작업 상태 조회 API
+app.get('/api/background-jobs', (req, res) => {
+    const jobs = Array.from(backgroundJobs.entries()).map(([jobId, job]) => ({
+        jobId,
+        ...job,
+        duration: job.endTime ? 
+            Math.round((job.endTime - job.startTime) / 1000) : 
+            Math.round((new Date() - job.startTime) / 1000)
+    }));
+    
+    res.json({
+        success: true,
+        jobs: jobs,
+        total: jobs.length,
+        processing: jobs.filter(j => j.status === 'processing').length,
+        completed: jobs.filter(j => j.status === 'completed').length
+    });
+});
+
 // 간단한 상태 확인 엔드포인트
 app.get('/api/status', async (req, res) => {
     const ytDlpInstalled = await checkYtDlp();
+    const backgroundJobsCount = backgroundJobs.size;
+    
     res.json({
         server: 'running',
         port: PORT,
         ytdlp_installed: ytDlpInstalled,
+        background_jobs: backgroundJobsCount,
+        features: {
+            background_processing: true,
+            ftp_upload: !!process.env.FTP_HOST,
+            supabase_integration: !!(process.env.SUPABASE_URL && process.env.SUPABASE_KEY),
+            youtube_title_extraction: true,
+            full_video_download: true
+        },
         endpoints: [
-            'GET /api/convert',
-            'POST /api/convert', 
+            'GET /api/convert (개선됨)',
+            'POST /api/convert (개선됨)', 
             'GET /api/docs',
             'GET /api/status',
             'GET /api/files',
+            'GET /api/background-jobs (새로움)',
             'GET /api/progress/:jobId'
         ]
     });

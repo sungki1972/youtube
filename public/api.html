@@ -40,9 +40,9 @@
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">시작 시간</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">시작 시간 (선택사항)</label>
                             <div class="relative">
-                                <input type="text" id="start" placeholder="예: 30:45 또는 1:30:45" 
+                                <input type="text" id="start" placeholder="비워두면 전체 영상 추출" 
                                        inputmode="numeric" pattern="[0-9:]*"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <button type="button" onclick="showTimeHelper('start')" 
@@ -50,13 +50,13 @@
                                     📱
                                 </button>
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">형식: MM:SS 또는 HH:MM:SS</p>
+                            <p class="mt-1 text-xs text-gray-500">형식: MM:SS 또는 HH:MM:SS (빈 값 = 전체)</p>
                             <div id="startError" class="text-red-500 text-xs mt-1 hidden">올바른 시간 형식을 입력하세요</div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">종료 시간</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">종료 시간 (선택사항)</label>
                             <div class="relative">
-                                <input type="text" id="end" placeholder="예: 45:30 또는 2:00:00" 
+                                <input type="text" id="end" placeholder="비워두면 전체 영상 추출" 
                                        inputmode="numeric" pattern="[0-9:]*"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <button type="button" onclick="showTimeHelper('end')" 
@@ -64,15 +64,16 @@
                                     📱
                                 </button>
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">형식: MM:SS 또는 HH:MM:SS</p>
+                            <p class="mt-1 text-xs text-gray-500">형식: MM:SS 또는 HH:MM:SS (빈 값 = 전체)</p>
                             <div id="endError" class="text-red-500 text-xs mt-1 hidden">올바른 시간 형식을 입력하세요</div>
                         </div>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">제목 (선택)</label>
-                        <input type="text" id="title" placeholder="my_audio" 
+                        <label class="block text-sm font-medium text-gray-700 mb-2">제목 (선택사항)</label>
+                        <input type="text" id="title" placeholder="비워두면 YouTube 제목을 자동으로 사용" 
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">빈 값이면 YouTube 제목을 자동으로 추출합니다.</p>
                     </div>
                     
                     <button type="submit" 
@@ -274,39 +275,55 @@
             const end = document.getElementById('end').value;
             const title = document.getElementById('title').value;
             
-            if (!url || !start || !end) {
-                alert('URL, 시작시간, 종료시간은 필수입니다.');
+            if (!url) {
+                alert('YouTube URL은 필수입니다.');
                 return;
             }
 
-            // 시간 형식 유효성 검사
-            const startValid = validateTimeInput('start');
-            const endValid = validateTimeInput('end');
+            // 시간이 입력된 경우에만 검증
+            const hasTimeInput = start && start.trim() !== '' && end && end.trim() !== '';
             
-            if (!startValid || !endValid) {
-                alert('시간 형식을 확인해주세요.\n지원 형식:\n• MM:SS (예: 30:45)\n• HH:MM:SS (예: 1:30:45)\n초는 0-59 사이여야 합니다.');
-                return;
+            if (hasTimeInput) {
+                // 시간 형식 유효성 검사
+                const startValid = validateTimeInput('start');
+                const endValid = validateTimeInput('end');
+                
+                if (!startValid || !endValid) {
+                    alert('시간 형식을 확인해주세요.\n지원 형식:\n• MM:SS (예: 30:45)\n• HH:MM:SS (예: 1:30:45)\n초는 0-59 사이여야 합니다.');
+                    return;
+                }
             }
 
-            // 시간을 ffmpeg 호환 형식으로 정규화
-            console.log('모바일 디버깅 - 원본 시간:', { start, end });
-            const normalizedStart = normalizeTime(start);
-            const normalizedEnd = normalizeTime(end);
-            console.log('모바일 디버깅 - 정규화된 시간:', { normalizedStart, normalizedEnd });
-
-            // 시간 범위 검증
-            const startSeconds = timeToSeconds(normalizedStart);
-            const endSeconds = timeToSeconds(normalizedEnd);
-            console.log('모바일 디버깅 - 초 변환:', { startSeconds, endSeconds });
+            let normalizedStart = start;
+            let normalizedEnd = end;
             
-            if (endSeconds <= startSeconds) {
-                alert(`종료 시간이 시작 시간보다 늦어야 합니다.\n시작: ${normalizedStart} (${startSeconds}초)\n종료: ${normalizedEnd} (${endSeconds}초)`);
-                return;
-            }
+            // 시간이 입력된 경우에만 정규화 및 검증
+            if (hasTimeInput) {
+                // 시간을 ffmpeg 호환 형식으로 정규화
+                console.log('모바일 디버깅 - 원본 시간:', { start, end });
+                normalizedStart = normalizeTime(start);
+                normalizedEnd = normalizeTime(end);
+                console.log('모바일 디버깅 - 정규화된 시간:', { normalizedStart, normalizedEnd });
 
-            const durationMinutes = Math.round((endSeconds - startSeconds) / 60);
-            if (durationMinutes > 120) { // 2시간 제한
-                if (!confirm(`선택한 구간이 ${durationMinutes}분입니다.\n긴 구간은 처리 시간이 오래 걸릴 수 있습니다.\n계속하시겠습니까?`)) {
+                // 시간 범위 검증
+                const startSeconds = timeToSeconds(normalizedStart);
+                const endSeconds = timeToSeconds(normalizedEnd);
+                console.log('모바일 디버깅 - 초 변환:', { startSeconds, endSeconds });
+                
+                if (endSeconds <= startSeconds) {
+                    alert(`종료 시간이 시작 시간보다 늦어야 합니다.\n시작: ${normalizedStart} (${startSeconds}초)\n종료: ${normalizedEnd} (${endSeconds}초)`);
+                    return;
+                }
+
+                const durationMinutes = Math.round((endSeconds - startSeconds) / 60);
+                if (durationMinutes > 120) { // 2시간 제한
+                    if (!confirm(`선택한 구간이 ${durationMinutes}분입니다.\n긴 구간은 처리 시간이 오래 걸릴 수 있습니다.\n계속하시겠습니까?`)) {
+                        return;
+                    }
+                }
+            } else {
+                // 전체 비디오 다운로드 확인
+                if (!confirm('전체 영상을 MP3로 변환합니다.\n영상 길이에 따라 시간이 오래 걸릴 수 있습니다.\n계속하시겠습니까?')) {
                     return;
                 }
             }
@@ -323,7 +340,7 @@
             errorDiv.classList.add('hidden');
             
             // 프로그레스 바 시작
-            updateProgress(0, '변환 준비 중...');
+            updateProgress(0, hasTimeInput ? '구간 변환 준비 중...' : '전체 영상 변환 준비 중...');
             simulateProgress();
             
             try {
