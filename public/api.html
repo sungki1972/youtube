@@ -3,291 +3,1154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube MP3 변환</title>
+    <title>은혜로운 교회 - YouTube MP3 변환</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Noto Serif KR', 'serif'],
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Noto Serif KR', serif; }
+
+        .clamp-5{display:-webkit-box;-webkit-line-clamp:5;line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+
+        /* Mobile optimization */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+
+            .tab-content {
+                padding: 0.75rem;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table-responsive table {
+                min-width: 600px;
+            }
+
+            .mobile-stack {
+                display: block;
+            }
+
+            .mobile-stack > * {
+                margin-bottom: 0.5rem;
+            }
+
+            .mobile-full {
+                width: 100%;
+            }
+
+            .mobile-text-sm {
+                font-size: 0.875rem;
+            }
+
+            .mobile-p-2 {
+                padding: 0.5rem;
+            }
+
+            .mobile-hidden {
+                display: none;
+            }
+
+            .mobile-visible {
+                display: block;
+            }
+
+            .mobile-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+
+            .mobile-modal {
+                width: 95%;
+                margin: 1rem auto;
+            }
+
+            .md-viewer {
+                max-height: 70vh;
+                font-size: 0.875rem;
+            }
+
+            .md-viewer h1 {
+                font-size: 1.5rem;
+            }
+
+            .md-viewer h2 {
+                font-size: 1.25rem;
+            }
+
+            .md-viewer h3 {
+                font-size: 1.125rem;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-hidden {
+                display: none !important;
+            }
+        }
+
+        /* MD Viewer styles - modern slate/indigo theme */
+        .md-viewer {
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(51, 65, 85, 0.1);
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .md-viewer h1 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.875rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #1e293b;
+            border-bottom: 2px solid #6366f1;
+            padding-bottom: 0.5rem;
+        }
+
+        .md-viewer h2 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+
+        .md-viewer h3 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #334155;
+        }
+
+        .md-viewer h4 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        .md-viewer p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            color: #1e293b;
+        }
+
+        .md-viewer ul, .md-viewer ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .md-viewer li {
+            margin-bottom: 0.5rem;
+            line-height: 1.8;
+            color: #1e293b;
+        }
+
+        .md-viewer blockquote {
+            border-left: 4px solid #6366f1;
+            padding-left: 1rem;
+            margin: 1rem 0;
+            font-style: italic;
+            background: #eef2ff;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            color: #334155;
+        }
+
+        .md-viewer table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .md-viewer th, .md-viewer td {
+            border: 1px solid #cbd5e1;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .md-viewer th {
+            background: #eef2ff;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .md-viewer strong {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .md-viewer em {
+            font-style: italic;
+        }
+
+        .md-viewer code {
+            background: #eef2ff;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #4338ca;
+        }
+
+        .md-viewer pre {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid #cbd5e1;
+        }
+
+        .md-viewer pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Modern gradient progress bar */
+        .progress-gold {
+            background: linear-gradient(90deg, #818cf8, #4f46e5);
+        }
+
+        /* Card hover effect */
+        .card-warm {
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .card-warm:hover {
+            border-color: #a5b4fc;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* Table row hover */
+        .warm-row:hover {
+            background-color: #f8fafc !important;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6366f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4338ca;
+        }
+
+        /* === Time Wheel UI === */
+        .time-wheel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            min-width: 50px;
+            position: relative;
+        }
+        .time-wheel .wheel-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: #1e293b;
+            background: linear-gradient(180deg, #f1f5f9 0%, #ffffff 50%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 8px;
+            min-width: 56px;
+            text-align: center;
+            cursor: ns-resize;
+            transition: all 0.15s ease;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .time-wheel .wheel-value:hover {
+            border-color: #6366f1;
+            background: linear-gradient(180deg, #eef2ff 0%, #ffffff 50%, #eef2ff 100%);
+            transform: scale(1.05);
+        }
+        .time-wheel .wheel-value.active {
+            border-color: #4f46e5;
+            background: #eef2ff;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+        }
+        .time-wheel .wheel-value.flash {
+            background: #c7d2fe;
+            transform: scale(1.1);
+        }
+        .time-wheel .wheel-btn-up,
+        .time-wheel .wheel-btn-down {
+            font-size: 10px;
+            color: #64748b;
+            background: transparent;
+            border: none;
+            padding: 2px 8px;
+            cursor: pointer;
+            transition: color 0.15s, transform 0.1s;
+            line-height: 1;
+        }
+        .time-wheel .wheel-btn-up:hover,
+        .time-wheel .wheel-btn-down:hover {
+            color: #4f46e5;
+            transform: scale(1.2);
+        }
+        .time-wheel .wheel-btn-up:active,
+        .time-wheel .wheel-btn-down:active {
+            transform: scale(0.9);
+        }
+        .time-wheel .wheel-label {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-slide-in { animation: slide-in 0.25s ease-out; }
+
+        /* === 모바일 전용 휠 강화 === */
+        @media (max-width: 768px) {
+            .time-wheel { min-width: 64px; }
+            .time-wheel .wheel-value {
+                font-size: 1.875rem;       /* 더 큰 숫자 */
+                padding: 12px 8px;
+                min-width: 64px;
+                cursor: pointer;
+                position: relative;
+            }
+            .time-wheel .wheel-value::after {
+                content: '⇅';
+                position: absolute;
+                top: 2px;
+                right: 4px;
+                font-size: 10px;
+                color: #6366f1;
+                opacity: 0.6;
+            }
+            .time-wheel .wheel-btn-up,
+            .time-wheel .wheel-btn-down {
+                font-size: 16px;            /* 10 → 16 */
+                padding: 10px 16px;         /* 큰 탭 영역 */
+                min-height: 40px;
+                color: #4f46e5;
+                background: #eef2ff;
+                border-radius: 6px;
+                margin: 4px 0;
+            }
+            .time-wheel .wheel-btn-up:active,
+            .time-wheel .wheel-btn-down:active {
+                background: #c7d2fe;
+                transform: scale(0.95);
+            }
+            .time-wheel .wheel-label { font-size: 11px; margin-top: 4px; }
+        }
+
+        /* === 모바일 바텀시트 피커 === */
+        @keyframes sheet-up {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .picker-sheet-overlay { animation: fade-in 0.2s ease-out; }
+        .picker-sheet { animation: sheet-up 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+
+        .picker-column {
+            height: 192px;                  /* 4행 × 48px */
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            position: relative;
+        }
+        .picker-column::-webkit-scrollbar { display: none; }
+        .picker-column-inner {
+            padding-top: 72px;              /* 1.5 항목 위 여백 */
+            padding-bottom: 72px;
+        }
+        .picker-item {
+            height: 48px;
+            scroll-snap-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #94a3b8;
+            font-family: 'Courier New', monospace;
+            transition: color 0.15s, font-size 0.15s, font-weight 0.15s;
+        }
+        .picker-item.is-selected {
+            color: #4f46e5;
+            font-size: 1.875rem;
+            font-weight: 700;
+        }
+        .picker-item.is-near {
+            color: #64748b;
+            font-size: 1.625rem;
+        }
+        /* 중앙 하이라이트 밴드 */
+        .picker-highlight {
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            top: 50%;
+            height: 48px;
+            margin-top: -24px;
+            background: linear-gradient(to bottom, rgba(99,102,241,0.08), rgba(99,102,241,0.12), rgba(99,102,241,0.08));
+            border-top: 1px solid rgba(99,102,241,0.2);
+            border-bottom: 1px solid rgba(99,102,241,0.2);
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        /* 상하 페이드 마스크 */
+        .picker-fade-mask::before,
+        .picker-fade-mask::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 64px;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .picker-fade-mask::before {
+            top: 0;
+            background: linear-gradient(to bottom, #fff 0%, rgba(255,255,255,0.7) 50%, transparent 100%);
+        }
+        .picker-fade-mask::after {
+            bottom: 0;
+            background: linear-gradient(to top, #fff 0%, rgba(255,255,255,0.7) 50%, transparent 100%);
+        }
+
+        /* === 자물쇠 회전 다이얼 === */
+        .dial-container {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;        /* 페이지 스크롤 방지 */
+            margin-bottom: 28px;        /* 라벨 공간 */
+        }
+        .dial-rotating {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle at 50% 35%, #f8fafc 0%, #cbd5e1 60%, #94a3b8 100%);
+            border: 4px solid #475569;
+            box-shadow:
+                0 6px 14px rgba(15,23,42,0.25),
+                inset 0 -6px 12px rgba(15,23,42,0.18),
+                inset 0 6px 10px rgba(255,255,255,0.6);
+            cursor: grab;
+            will-change: transform;
+        }
+        .dial-rotating:active { cursor: grabbing; }
+        .dial-rotating.is-dragging {
+            box-shadow:
+                0 8px 18px rgba(99,102,241,0.35),
+                inset 0 -6px 12px rgba(15,23,42,0.18),
+                inset 0 6px 10px rgba(255,255,255,0.6);
+            border-color: #4f46e5;
+        }
+        .dial-tick {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 8px;
+            background: #475569;
+            margin-left: -1px;
+            margin-top: -53px;
+            transform-origin: 1px 53px;
+            border-radius: 1px;
+        }
+        .dial-tick.major {
+            height: 14px;
+            width: 3px;
+            margin-left: -1.5px;
+            margin-top: -53px;
+            background: #1e293b;
+        }
+        .dial-tick-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            font-size: 9px;
+            font-weight: 700;
+            color: #1e293b;
+            transform-origin: center;
+            pointer-events: none;
+            font-family: 'Courier New', monospace;
+        }
+        .dial-pointer-fixed {
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-top: 14px solid #ef4444;
+            z-index: 3;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35));
+        }
+        .dial-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(15,23,42,0.18), inset 0 1px 0 rgba(255,255,255,0.9);
+            z-index: 2;
+            pointer-events: none;        /* 클릭이 다이얼로 통과 */
+            border: 1.5px solid #e2e8f0;
+        }
+        .dial-value.flash {
+            background: #c7d2fe;
+            color: #312e81;
+        }
+        .dial-label {
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+        @keyframes dial-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        .dial-value.pulse { animation: dial-pulse 0.2s ease-out; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gradient-to-br from-slate-50 to-indigo-50/30 min-h-screen font-sans">
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-6xl mx-auto">
-            <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">YouTube MP3 변환</h1>
-            
-            <!-- 탭 네비게이션 -->
+
+            <!-- Header with church cross -->
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center gap-3 mb-3">
+                    <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M11 2v4H7v4h4v12h2V10h4V6h-4V2h-2z"/></svg>
+                    <h1 class="text-4xl font-bold font-serif text-slate-800 tracking-tight">은혜로운 교회</h1>
+                    <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M11 2v4H7v4h4v12h2V10h4V6h-4V2h-2z"/></svg>
+                </div>
+                <p class="text-slate-500 text-sm font-sans tracking-wide">YouTube MP3 변환 및 설교 관리 시스템</p>
+                <div class="w-24 h-0.5 bg-gradient-to-r from-transparent via-indigo-400 to-transparent mx-auto mt-3"></div>
+            </div>
+
+            <!-- Tab navigation - pill style -->
             <div class="mb-8">
-                <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex space-x-8">
-                        <button id="convertTab" onclick="switchTab('convert')" 
-                                class="border-b-2 border-blue-500 text-blue-600 py-4 px-1 text-sm font-medium">
-                            MP3 변환
+                <div class="flex justify-center">
+                    <nav class="inline-flex bg-slate-100/70 rounded-full p-1.5 gap-1 shadow-inner">
+                        <button id="convertTab" onclick="switchTab('convert')"
+                                class="rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300 bg-indigo-600 text-white shadow-md">
+                            <span class="flex items-center gap-1.5">
+                                <i data-lucide="music" class="w-4 h-4"></i>
+                                MP3 변환
+                            </span>
                         </button>
                         <button id="filesTab" onclick="switchTab('files')"
-                                class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 text-sm font-medium">
-                            파일 목록
+                                class="rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300 text-slate-600 hover:bg-slate-100">
+                            <span class="flex items-center gap-1.5">
+                                <i data-lucide="folder-open" class="w-4 h-4"></i>
+                                파일 목록
+                            </span>
+                        </button>
+                        <button id="summaryTab" onclick="switchTab('summary')"
+                                class="rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300 text-slate-600 hover:bg-slate-100">
+                            <span class="flex items-center gap-1.5">
+                                <i data-lucide="book-open" class="w-4 h-4"></i>
+                                SUMMARY
+                            </span>
+                        </button>
+                        <button id="mp4Tab" onclick="switchTab('mp4')"
+                                class="rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300 text-slate-600 hover:bg-slate-100">
+                            <span class="flex items-center gap-1.5">
+                                <i data-lucide="video" class="w-4 h-4"></i>
+                                MP4
+                            </span>
                         </button>
                     </nav>
                 </div>
             </div>
-            
-            <!-- 변환 탭 콘텐츠 -->
+
+            <!-- Convert tab content -->
             <div id="convertContent" class="tab-content">
-                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                    <h2 class="text-xl font-semibold mb-4">YouTube MP3 변환</h2>
+                <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 card-warm">
+                    <h2 class="text-xl font-semibold mb-4 font-serif text-slate-800 flex items-center gap-2">
+                        <i data-lucide="youtube" class="w-5 h-5 text-indigo-600"></i>
+                        YouTube MP3 변환
+                    </h2>
                 <form id="testForm" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">YouTube URL</label>
-                        <input type="url" id="url" placeholder="https://youtu.be/VIDEO_ID" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-2">YouTube URL</label>
+                        <input type="url" id="url" placeholder="https://youtu.be/VIDEO_ID"
+                               class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50/50 placeholder-slate-300">
                     </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">시작 시간 (선택사항)</label>
-                            <div class="relative">
-                                <input type="text" id="start" placeholder="비워두면 전체 영상 추출" 
-                                       inputmode="numeric" pattern="[0-9:]*"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button type="button" onclick="showTimeHelper('start')" 
-                                        class="absolute right-2 top-2 text-blue-600 hover:text-blue-800 text-sm">
-                                    📱
-                                </button>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-500">형식: MM:SS 또는 HH:MM:SS (빈 값 = 전체)</p>
-                            <div id="startError" class="text-red-500 text-xs mt-1 hidden">올바른 시간 형식을 입력하세요</div>
+
+                    <!-- 시간 선택 (휠 스피너 UI) -->
+                    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="timer" class="w-4 h-4 text-indigo-600"></i>
+                                <span class="hidden md:inline">시간 선택 (마우스 휠 / 드래그 / 클릭)</span>
+                                <span class="md:hidden">시간 선택 (탭하면 피커 열림)</span>
+                            </label>
+                            <button type="button" onclick="resetTimeWheels()" class="text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1">
+                                <i data-lucide="rotate-ccw" class="w-3 h-3"></i>전체 영상
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">종료 시간 (선택사항)</label>
-                            <div class="relative">
-                                <input type="text" id="end" placeholder="비워두면 전체 영상 추출" 
-                                       inputmode="numeric" pattern="[0-9:]*"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button type="button" onclick="showTimeHelper('end')" 
-                                        class="absolute right-2 top-2 text-blue-600 hover:text-blue-800 text-sm">
-                                    📱
-                                </button>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <!-- 시작 시간 -->
+                            <div class="bg-white rounded-lg p-3 shadow-sm">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-emerald-700 flex items-center gap-1">
+                                        <i data-lucide="play" class="w-3 h-3"></i>시작
+                                    </span>
+                                    <span id="startDisplay" class="text-xs font-mono text-slate-500">0:00:00</span>
+                                </div>
+                                <div class="time-wheel-group flex items-center justify-center gap-1" data-target="start">
+                                    <div class="time-wheel" data-unit="h" data-min="0" data-max="3">
+                                        <button type="button" class="wheel-btn-up" onclick="adjustWheel(this, 1)">▲</button>
+                                        <div class="wheel-value">0</div>
+                                        <button type="button" class="wheel-btn-down" onclick="adjustWheel(this, -1)">▼</button>
+                                        <div class="wheel-label">시</div>
+                                    </div>
+                                    <span class="text-xl font-bold text-slate-400">:</span>
+                                    <div class="time-wheel" data-unit="m" data-min="0" data-max="59">
+                                        <button type="button" class="wheel-btn-up" onclick="adjustWheel(this, 1)">▲</button>
+                                        <div class="wheel-value">00</div>
+                                        <button type="button" class="wheel-btn-down" onclick="adjustWheel(this, -1)">▼</button>
+                                        <div class="wheel-label">분</div>
+                                    </div>
+                                    <span class="text-xl font-bold text-slate-400">:</span>
+                                    <div class="time-wheel" data-unit="s" data-min="0" data-max="59">
+                                        <button type="button" class="wheel-btn-up" onclick="adjustWheel(this, 1)">▲</button>
+                                        <div class="wheel-value">00</div>
+                                        <button type="button" class="wheel-btn-down" onclick="adjustWheel(this, -1)">▼</button>
+                                        <div class="wheel-label">초</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="start" value="">
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">형식: MM:SS 또는 HH:MM:SS (빈 값 = 전체)</p>
-                            <div id="endError" class="text-red-500 text-xs mt-1 hidden">올바른 시간 형식을 입력하세요</div>
+
+                            <!-- 종료 시간 -->
+                            <div class="bg-white rounded-lg p-3 shadow-sm">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-rose-700 flex items-center gap-1">
+                                        <i data-lucide="square" class="w-3 h-3"></i>종료
+                                    </span>
+                                    <span id="endDisplay" class="text-xs font-mono text-slate-500">0:00:00</span>
+                                </div>
+                                <div class="time-wheel-group flex items-center justify-center gap-1" data-target="end">
+                                    <div class="time-wheel" data-unit="h" data-min="0" data-max="3">
+                                        <button type="button" class="wheel-btn-up" onclick="adjustWheel(this, 1)">▲</button>
+                                        <div class="wheel-value">0</div>
+                                        <button type="button" class="wheel-btn-down" onclick="adjustWheel(this, -1)">▼</button>
+                                        <div class="wheel-label">시</div>
+                                    </div>
+                                    <span class="text-xl font-bold text-slate-400">:</span>
+                                    <div class="time-wheel" data-unit="m" data-min="0" data-max="59">
+                                        <button type="button" class="wheel-btn-up" onclick="adjustWheel(this, 1)">▲</button>
+                                        <div class="wheel-value">00</div>
+                                        <button type="button" class="wheel-btn-down" onclick="adjustWheel(this, -1)">▼</button>
+                                        <div class="wheel-label">분</div>
+                                    </div>
+                                    <span class="text-xl font-bold text-slate-400">:</span>
+                                    <div class="time-wheel" data-unit="s" data-min="0" data-max="59">
+                                        <button type="button" class="wheel-btn-up" onclick="adjustWheel(this, 1)">▲</button>
+                                        <div class="wheel-value">00</div>
+                                        <button type="button" class="wheel-btn-down" onclick="adjustWheel(this, -1)">▼</button>
+                                        <div class="wheel-label">초</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="end" value="">
+                            </div>
                         </div>
+
+                        <!-- 빠른 선택 프리셋 -->
+                        <div class="mt-3 flex flex-wrap gap-1.5">
+                            <span class="text-xs text-slate-500 mr-1 self-center">빠른 선택:</span>
+                            <button type="button" onclick="quickSetTime(0,0,0,0,30,0)" class="text-xs px-2 py-1 bg-white hover:bg-indigo-50 border border-slate-200 rounded-md text-slate-600 transition-colors">0~30분</button>
+                            <button type="button" onclick="quickSetTime(0,0,0,1,0,0)" class="text-xs px-2 py-1 bg-white hover:bg-indigo-50 border border-slate-200 rounded-md text-slate-600 transition-colors">0~1시간</button>
+                            <button type="button" onclick="quickSetTime(0,0,0,1,30,0)" class="text-xs px-2 py-1 bg-white hover:bg-indigo-50 border border-slate-200 rounded-md text-slate-600 transition-colors">0~1시간 30분</button>
+                            <button type="button" onclick="quickSetTime(0,0,0,2,0,0)" class="text-xs px-2 py-1 bg-white hover:bg-indigo-50 border border-slate-200 rounded-md text-slate-600 transition-colors">0~2시간</button>
+                            <button type="button" onclick="quickSetTime(0,30,0,1,30,0)" class="text-xs px-2 py-1 bg-white hover:bg-indigo-50 border border-slate-200 rounded-md text-slate-600 transition-colors">30분~1시간 30분</button>
+                            <button type="button" onclick="quickSetTime(0,0,0,3,0,0)" class="text-xs px-2 py-1 bg-white hover:bg-indigo-50 border border-slate-200 rounded-md text-slate-600 transition-colors">최대(3시간)</button>
+                        </div>
+
+                        <p class="mt-2 text-xs text-slate-500 text-center hidden md:block">
+                            💡 <strong>휠 스크롤</strong> · <strong>위/아래 화살표</strong> · <strong>드래그</strong> · <strong>클릭</strong>으로 빠른 조정 (범위: 0:00:00 ~ 3:00:00)
+                        </p>
+                        <p class="mt-2 text-xs text-slate-500 text-center md:hidden">
+                            📱 숫자를 <strong>탭</strong>하면 피커가 열립니다 · ▲/▼ 버튼으로 미세 조정
+                        </p>
+                        <div id="startError" class="text-red-500 text-xs mt-1 hidden">올바른 시간 형식을 입력하세요</div>
+                        <div id="endError" class="text-red-500 text-xs mt-1 hidden">올바른 시간 형식을 입력하세요</div>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">제목 (선택사항)</label>
-                        <input type="text" id="title" placeholder="비워두면 YouTube 제목을 자동으로 사용" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="mt-1 text-xs text-gray-500">빈 값이면 YouTube 제목을 자동으로 추출합니다.</p>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">제목 (선택사항)</label>
+                        <input type="text" id="title" placeholder="비워두면 YouTube 제목을 자동으로 사용"
+                               class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50/50 placeholder-slate-300">
+                        <p class="mt-1 text-xs text-slate-500">빈 값이면 YouTube 제목을 자동으로 추출합니다.</p>
                     </div>
-                    
-                    <button type="submit" 
-                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+                    <label for="makeMp4Check" class="flex items-start gap-2.5 p-3 rounded-lg border border-indigo-100 bg-indigo-50/40 cursor-pointer hover:bg-indigo-50 transition-colors">
+                        <input type="checkbox" id="makeMp4Check" class="mt-0.5 w-4 h-4 accent-indigo-600 rounded">
+                        <span class="text-sm text-slate-700 leading-snug">
+                            <span class="font-medium text-slate-800 flex items-center gap-1.5">
+                                <i data-lucide="clapperboard" class="w-4 h-4 text-indigo-600"></i>
+                                MP4 요약도 함께 생성
+                            </span>
+                            <span class="text-xs text-slate-500">7~9분 요약 영상 · YouTube 자동 업로드 (처리에 10분 이상 소요될 수 있음)</span>
+                        </span>
+                    </label>
+
+                    <button type="submit"
+                            class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 font-medium text-base transition-colors duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                        <i data-lucide="download" class="w-5 h-5"></i>
                         MP3 변환 시작
                     </button>
                 </form>
-                
+
                 <div id="result" class="mt-4 hidden">
                                     <div id="loading" class="text-center py-4 hidden">
-                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <p class="mt-2 text-gray-600">변환 중입니다... 잠시만 기다려주세요.</p>
-                    
-                    <!-- 프로그레스 바 -->
-                    <div class="mt-4 w-full bg-gray-200 rounded-full h-2.5">
-                        <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <p class="mt-2 text-slate-700">변환 중입니다... 잠시만 기다려주세요.</p>
+
+                    <!-- Progress bar -->
+                    <div class="mt-4 w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                        <div id="progressBar" class="progress-gold h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
-                    <div class="mt-2 text-sm text-gray-500">
+                    <div class="mt-2 text-sm text-slate-600">
                         <span id="progressText">변환 준비 중...</span>
-                        <span id="progressPercent" class="float-right">0%</span>
+                        <span id="progressPercent" class="float-right font-medium">0%</span>
                     </div>
                 </div>
-                    
-                    <div id="success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded hidden">
-                        <h3 class="font-semibold">변환 완료!</h3>
-                        <p id="successMessage"></p>
-                        <div class="mt-2">
-                            <button id="downloadButton" onclick="downloadResult()" class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+
+                    <div id="success" class="bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded-xl hidden">
+                        <h3 class="font-semibold flex items-center gap-2">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            변환 완료!
+                        </h3>
+                        <p id="successMessage" class="mt-1"></p>
+                        <div class="mt-3">
+                            <button id="downloadButton" onclick="downloadResult()" class="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                <i data-lucide="download" class="w-4 h-4"></i>
                                 MP3 다운로드
                             </button>
                         </div>
                     </div>
-                    
-                    <div id="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded hidden">
-                        <h3 class="font-semibold">오류 발생</h3>
-                        <p id="errorMessage"></p>
+
+                    <div id="error" class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl hidden">
+                        <h3 class="font-semibold flex items-center gap-2">
+                            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                            오류 발생
+                        </h3>
+                        <p id="errorMessage" class="mt-1"></p>
                     </div>
                 </div>
                 </div>
             </div>
-            
-            <!-- 파일 목록 탭 콘텐츠 -->
+
+            <!-- Files tab content -->
             <div id="filesContent" class="tab-content hidden">
-                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 card-warm">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold text-gray-800">생성된 MP3 파일 목록</h2>
-                        <button onclick="refreshFiles()" 
-                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        <h2 class="text-xl font-semibold text-slate-800 font-serif flex items-center gap-2">
+                            <i data-lucide="list-music" class="w-5 h-5 text-indigo-600"></i>
+                            생성된 MP3 파일 목록
+                        </h2>
+                        <button onclick="refreshFiles()"
+                                class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1.5 shadow-md">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                             새로고침
                         </button>
                     </div>
-                    
+
                     <div id="filesLoading" class="text-center py-8">
-                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        <p class="mt-2 text-gray-600">파일 목록을 불러오는 중...</p>
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                        <p class="mt-2 text-slate-600">파일 목록을 불러오는 중...</p>
                     </div>
-                    
+
                     <div id="filesList" class="hidden">
-                        <div id="filesCount" class="mb-4 text-sm text-gray-600"></div>
-                        <div class="overflow-x-auto">
+                        <div id="filesCount" class="mb-4 text-sm text-slate-600 font-medium"></div>
+                        <div class="overflow-x-auto rounded-lg border border-slate-200">
                             <table class="min-w-full table-auto">
-                                <thead class="bg-gray-50">
+                                <thead class="bg-slate-50">
                                     <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">파일명</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">크기</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">생성일시</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">다운로드</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">재생</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">파일명</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">크기</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">생성일시</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">다운로드</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">재생</th>
                                     </tr>
                                 </thead>
-                                <tbody id="filesTableBody" class="bg-white divide-y divide-gray-200">
-                                    <!-- 파일 목록이 여기에 추가됩니다 -->
+                                <tbody id="filesTableBody" class="bg-white divide-y divide-slate-100">
+                                    <!-- Files will be added here -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                    
+
                     <div id="noFilesFound" class="text-center py-8 hidden">
-                        <p class="text-gray-500">생성된 MP3 파일이 없습니다.</p>
-                        <button onclick="switchTab('convert')" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                        <i data-lucide="music-2" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
+                        <p class="text-slate-500">생성된 MP3 파일이 없습니다.</p>
+                        <button onclick="switchTab('convert')" class="mt-4 bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-md">
                             첫 MP3 생성하기
                         </button>
                     </div>
-                    
-                    <div id="filesError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded hidden">
+
+                    <div id="filesError" class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl hidden">
                         <p>파일 목록을 불러오는 중 오류가 발생했습니다.</p>
                     </div>
                 </div>
-                
-                <!-- 통계 -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold mb-4">통계</h3>
+
+                <!-- Statistics - modern colors -->
+                <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 card-warm">
+                    <h3 class="text-lg font-semibold mb-4 font-serif text-slate-800 flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-indigo-600"></i>
+                        통계
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-blue-50 p-4 rounded-lg">
-                            <div class="text-2xl font-bold text-blue-600" id="statTotalFiles">0</div>
-                            <div class="text-sm text-gray-600">총 파일 수</div>
+                        <div class="bg-indigo-50 p-5 rounded-xl border border-indigo-200">
+                            <div class="text-2xl font-bold text-indigo-700" id="statTotalFiles">0</div>
+                            <div class="text-sm text-indigo-600 mt-1">총 파일 수</div>
                         </div>
-                        <div class="bg-green-50 p-4 rounded-lg">
-                            <div class="text-2xl font-bold text-green-600" id="statTotalSize">0 MB</div>
-                            <div class="text-sm text-gray-600">총 파일 크기</div>
+                        <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200">
+                            <div class="text-2xl font-bold text-emerald-700" id="statTotalSize">0 MB</div>
+                            <div class="text-sm text-emerald-600 mt-1">총 파일 크기</div>
                         </div>
-                        <div class="bg-purple-50 p-4 rounded-lg">
-                            <div class="text-2xl font-bold text-purple-600" id="statLatestFile">-</div>
-                            <div class="text-sm text-gray-600">최근 생성</div>
+                        <div class="bg-violet-50 p-5 rounded-xl border border-violet-200">
+                            <div class="text-2xl font-bold text-violet-700" id="statLatestFile">-</div>
+                            <div class="text-sm text-violet-600 mt-1">최근 생성</div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- SUMMARY tab content -->
+            <div id="summaryContent" class="tab-content hidden">
+                <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 card-warm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold font-serif text-slate-800 flex items-center gap-2">
+                            <i data-lucide="scroll-text" class="w-5 h-5 text-indigo-600"></i>
+                            요약 게시판
+                        </h2>
+                        <div class="flex space-x-2">
+                            <input id="summarySearch" type="search" placeholder="제목/본문 검색" class="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50/50 placeholder-slate-300 text-sm">
+                            <button onclick="loadSummary(1)" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1.5 shadow-md text-sm">
+                                <i data-lucide="search" class="w-4 h-4"></i>
+                                검색
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 데스크톱: 테이블 뷰 (md 이상에서만 표시) -->
+                    <div class="hidden md:block overflow-x-auto rounded-lg border border-slate-200">
+                        <table class="min-w-full table-auto">
+                            <colgroup>
+                                <col style="width:40%">
+                                <col style="width:32%">
+                                <col style="width:28%">
+                            </colgroup>
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">제목</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">본문</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">작업</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summaryTableBody" class="bg-white divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- 모바일: 카드 리스트 뷰 (md 미만에서만 표시) -->
+                    <div id="summaryMobileList" class="md:hidden space-y-3"></div>
+                    <!-- Detail panel -->
+                    <div id="summaryDetail" class="mt-6 hidden">
+                        <div class="border border-slate-200 rounded-xl p-5 bg-slate-50/50">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-semibold font-serif text-slate-800 flex items-center gap-2">
+                                    <i data-lucide="file-text" class="w-5 h-5 text-indigo-600"></i>
+                                    상세 보기
+                                </h3>
+                                <div class="space-x-2">
+                                    <button onclick="saveSummaryDetail()" class="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">저장</button>
+                                    <button onclick="closeSummaryDetail()" class="text-sm text-slate-600 hover:text-slate-800 px-3 py-1.5">닫기</button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="text-xs text-slate-600 mb-1 font-medium">제목</div>
+                                <input id="detailTitle" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white" />
+                            </div>
+                            <div>
+                                <div class="text-xs text-slate-600 mb-1 font-medium">본문 - md 형식으로 본문 그대로 변환</div>
+                                <textarea id="detailBonmun" class="w-full h-64 text-sm bg-white p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="summaryPagination" class="mt-4"></div>
+                </div>
+            </div>
+
+            <!-- MP4 tab content -->
+            <div id="mp4Content" class="tab-content hidden">
+                <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 card-warm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold font-serif text-slate-800 flex items-center gap-2">
+                            <i data-lucide="clapperboard" class="w-5 h-5 text-indigo-600"></i>
+                            MP4 요약 게시판
+                        </h2>
+                        <div class="flex space-x-2">
+                            <input id="mp4Search" type="search" placeholder="제목 검색" class="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50/50 placeholder-slate-300 text-sm">
+                            <button onclick="loadMp4(1, true)" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1.5 shadow-md text-sm">
+                                <i data-lucide="search" class="w-4 h-4"></i>
+                                검색
+                            </button>
+                            <button onclick="loadMp4(1, true)" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-1.5 shadow-sm text-sm">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                새로고침
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 데스크톱: 테이블 뷰 (md 이상에서만 표시) -->
+                    <div class="hidden md:block overflow-x-auto rounded-lg border border-slate-200">
+                        <table class="min-w-full table-auto">
+                            <colgroup>
+                                <col style="width:34%">
+                                <col style="width:14%">
+                                <col style="width:20%">
+                                <col style="width:20%">
+                                <col style="width:12%">
+                            </colgroup>
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">제목</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">날짜</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">원본 MP4</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">요약 MP4</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">작업</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mp4TableBody" class="bg-white divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- 모바일: 카드 리스트 뷰 (md 미만에서만 표시) -->
+                    <div id="mp4MobileList" class="md:hidden space-y-3"></div>
+
+                    <div id="mp4Pagination" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MD Viewer modal -->
+    <div id="mdViewerModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-10 mx-auto p-6 border border-slate-200 w-11/12 max-w-4xl shadow-2xl rounded-2xl bg-white mobile-modal">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="mdViewerTitle" class="text-lg font-semibold text-slate-800 font-serif flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-5 h-5 text-indigo-600"></i>
+                        Markdown 뷰어
+                    </h3>
+                    <button onclick="closeMdViewer()" class="text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-lg hover:bg-slate-50">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="mdViewerContent" class="md-viewer">
+                    <!-- Markdown content rendered here -->
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
         let currentAudio = null;
         let currentTab = 'convert';
+        // 탭별 데이터 캐시 (불필요한 재요청 방지)
+        let summaryCache = null;
+        let mp4Cache = null;
+        // MP4 탭 자동 새로고침 인터벌 (processing 항목이 있을 때만 동작)
+        let mp4RefreshInterval = null;
 
-        // 페이지 로드 시 초기화
+        // Page load initialization
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('testForm').addEventListener('submit', handleConvert);
-            
-            // 실시간 시간 검증
+
+            // Real-time time validation
             document.getElementById('start').addEventListener('blur', function() {
                 validateTimeInput('start');
             });
-            
+
             document.getElementById('end').addEventListener('blur', function() {
                 validateTimeInput('end');
             });
-            
-            // 입력 중 에러 메시지 숨기기
+
+            // Hide error on input
             document.getElementById('start').addEventListener('input', function() {
                 hideTimeError('start');
             });
-            
+
             document.getElementById('end').addEventListener('input', function() {
                 hideTimeError('end');
             });
+
+            // ESC key to close modals
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeMdViewer();
+                }
+            });
         });
 
-        // 시간 입력 검증
+        // Time input validation
         function validateTimeInput(inputId) {
             const input = document.getElementById(inputId);
             const errorDiv = document.getElementById(inputId + 'Error');
             const value = input.value.trim();
-            
+
             if (value && !isValidTimeFormat(value)) {
                 input.classList.add('border-red-500', 'focus:ring-red-500');
-                input.classList.remove('border-gray-300', 'focus:ring-blue-500');
+                input.classList.remove('border-slate-200', 'focus:ring-indigo-400');
                 errorDiv.classList.remove('hidden');
                 return false;
             } else {
                 input.classList.remove('border-red-500', 'focus:ring-red-500');
-                input.classList.add('border-gray-300', 'focus:ring-blue-500');
+                input.classList.add('border-slate-200', 'focus:ring-indigo-400');
                 errorDiv.classList.add('hidden');
                 return true;
             }
         }
 
-        // 시간 에러 메시지 숨기기
+        // Hide time error
         function hideTimeError(inputId) {
             const input = document.getElementById(inputId);
             const errorDiv = document.getElementById(inputId + 'Error');
-            
+
             input.classList.remove('border-red-500', 'focus:ring-red-500');
-            input.classList.add('border-gray-300', 'focus:ring-blue-500');
+            input.classList.add('border-slate-200', 'focus:ring-indigo-400');
             errorDiv.classList.add('hidden');
         }
 
-        // 탭 전환
+        // Tab switching - pill style
         function switchTab(tab) {
-            // 탭 버튼 스타일 변경
-            document.getElementById('convertTab').className = 
-                tab === 'convert' ? 
-                'border-b-2 border-blue-500 text-blue-600 py-4 px-1 text-sm font-medium' :
-                'border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 text-sm font-medium';
-            
-            document.getElementById('filesTab').className = 
-                tab === 'files' ? 
-                'border-b-2 border-blue-500 text-blue-600 py-4 px-1 text-sm font-medium' :
-                'border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-1 text-sm font-medium';
+            const activeClass = 'rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300 bg-indigo-600 text-white shadow-md';
+            const inactiveClass = 'rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300 text-slate-600 hover:bg-slate-100';
 
-            // 탭 콘텐츠 표시/숨김
+            document.getElementById('convertTab').className = tab === 'convert' ? activeClass : inactiveClass;
+            document.getElementById('filesTab').className = tab === 'files' ? activeClass : inactiveClass;
+            document.getElementById('summaryTab').className = tab === 'summary' ? activeClass : inactiveClass;
+            document.getElementById('mp4Tab').className = tab === 'mp4' ? activeClass : inactiveClass;
+
+            // Tab content show/hide
             document.getElementById('convertContent').classList.toggle('hidden', tab !== 'convert');
             document.getElementById('filesContent').classList.toggle('hidden', tab !== 'files');
+            document.getElementById('summaryContent').classList.toggle('hidden', tab !== 'summary');
+            document.getElementById('mp4Content').classList.toggle('hidden', tab !== 'mp4');
 
             currentTab = tab;
 
-            // 파일 탭으로 전환 시 파일 목록 로드
+            // MP4 탭을 벗어나면 자동 새로고침 인터벌 정리 (누수 방지)
+            if (tab !== 'mp4') {
+                stopMp4AutoRefresh();
+            }
+
+            // Load data on tab switch (캐시가 있으면 재요청 안 함)
             if (tab === 'files') {
                 loadFiles();
             }
+            if (tab === 'summary' && !summaryCache) {
+                loadSummary(1);
+            }
+            if (tab === 'mp4') {
+                loadMp4(1);
+            }
+
+            // Re-initialize Lucide icons for newly visible elements
+            lucide.createIcons();
         }
 
-        // MP3 변환 처리
+        // MP3 conversion handler
         async function handleConvert(e) {
             e.preventDefault();
-            
+
             const url = document.getElementById('url').value;
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
             const title = document.getElementById('title').value;
-            
+
             if (!url) {
                 alert('YouTube URL은 필수입니다.');
                 return;
             }
 
-            // 시간이 입력된 경우에만 검증
+            // Validate time only if both are provided
             const hasTimeInput = start && start.trim() !== '' && end && end.trim() !== '';
-            
+
             if (hasTimeInput) {
-                // 시간 형식 유효성 검사
                 const startValid = validateTimeInput('start');
                 const endValid = validateTimeInput('end');
-                
+
                 if (!startValid || !endValid) {
                     alert('시간 형식을 확인해주세요.\n지원 형식:\n• MM:SS (예: 30:45)\n• HH:MM:SS (예: 1:30:45)\n초는 0-59 사이여야 합니다.');
                     return;
@@ -296,78 +1159,72 @@
 
             let normalizedStart = start;
             let normalizedEnd = end;
-            
-            // 시간이 입력된 경우에만 정규화 및 검증
+
             if (hasTimeInput) {
-                // 시간을 ffmpeg 호환 형식으로 정규화
                 console.log('모바일 디버깅 - 원본 시간:', { start, end });
                 normalizedStart = normalizeTime(start);
                 normalizedEnd = normalizeTime(end);
                 console.log('모바일 디버깅 - 정규화된 시간:', { normalizedStart, normalizedEnd });
 
-                // 시간 범위 검증
                 const startSeconds = timeToSeconds(normalizedStart);
                 const endSeconds = timeToSeconds(normalizedEnd);
                 console.log('모바일 디버깅 - 초 변환:', { startSeconds, endSeconds });
-                
+
                 if (endSeconds <= startSeconds) {
                     alert(`종료 시간이 시작 시간보다 늦어야 합니다.\n시작: ${normalizedStart} (${startSeconds}초)\n종료: ${normalizedEnd} (${endSeconds}초)`);
                     return;
                 }
 
                 const durationMinutes = Math.round((endSeconds - startSeconds) / 60);
-                if (durationMinutes > 120) { // 2시간 제한
+                if (durationMinutes > 120) {
                     if (!confirm(`선택한 구간이 ${durationMinutes}분입니다.\n긴 구간은 처리 시간이 오래 걸릴 수 있습니다.\n계속하시겠습니까?`)) {
                         return;
                     }
                 }
             } else {
-                // 전체 비디오 다운로드 확인
                 if (!confirm('전체 영상을 MP3로 변환합니다.\n영상 길이에 따라 시간이 오래 걸릴 수 있습니다.\n계속하시겠습니까?')) {
                     return;
                 }
             }
-            
+
             const resultDiv = document.getElementById('result');
             const loadingDiv = document.getElementById('loading');
             const successDiv = document.getElementById('success');
             const errorDiv = document.getElementById('error');
-            
-            // 초기화
+
             resultDiv.classList.remove('hidden');
             loadingDiv.classList.remove('hidden');
             successDiv.classList.add('hidden');
             errorDiv.classList.add('hidden');
-            
-            // 프로그레스 바 시작
+
             updateProgress(0, hasTimeInput ? '구간 변환 준비 중...' : '전체 영상 변환 준비 중...');
             simulateProgress();
-            
+
             try {
                 const response = await fetch('/api/convert', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ 
-                        url, 
-                        start: normalizedStart, 
-                        end: normalizedEnd, 
-                        title 
+                    body: JSON.stringify({
+                        url,
+                        start: normalizedStart,
+                        end: normalizedEnd,
+                        title,
+                        makeMp4: document.getElementById('makeMp4Check').checked
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success && data.jobId) {
-                    // 실시간 진행상황 모니터링 시작
                     monitorProgress(data.jobId);
                 } else {
                     loadingDiv.classList.add('hidden');
                     document.getElementById('errorMessage').textContent = data.error || '요청 처리 중 오류가 발생했습니다.';
                     errorDiv.classList.remove('hidden');
                 }
-                
+
             } catch (error) {
                 loadingDiv.classList.add('hidden');
                 document.getElementById('errorMessage').textContent = '네트워크 오류가 발생했습니다.';
@@ -375,13 +1232,13 @@
             }
         }
 
-        // 파일 목록 로드
+        // Load file list
         async function loadFiles() {
             try {
                 showFilesLoading();
                 const response = await fetch('/api/files');
                 const data = await response.json();
-                
+
                 if (data.success) {
                     displayFiles(data.files);
                     updateStatistics(data.files);
@@ -394,7 +1251,7 @@
             }
         }
 
-        // 파일 목록 표시
+        // Display file list
         function displayFiles(files) {
             const loadingDiv = document.getElementById('filesLoading');
             const listDiv = document.getElementById('filesList');
@@ -409,60 +1266,60 @@
             if (files.length === 0) {
                 listDiv.classList.add('hidden');
                 noFilesDiv.classList.remove('hidden');
+                lucide.createIcons();
                 return;
             }
 
             noFilesDiv.classList.add('hidden');
             listDiv.classList.remove('hidden');
-            
+
             countDiv.textContent = `총 ${files.length}개의 MP3 파일`;
-            
+
             tableBody.innerHTML = '';
-            
+
             files.forEach(file => {
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
-                
-                // 파일명 길이를 20% 줄임 (기존 50자 -> 40자)
-                const fileName = file.fileName.length > 40 ? 
+                row.className = 'warm-row';
+
+                const fileName = file.fileName.length > 40 ?
                     file.fileName.substring(0, 40) + '...' : file.fileName;
-                
+
                 const fileSize = (file.fileSize / 1024 / 1024).toFixed(2);
                 const createdDate = new Date(file.createdAt).toLocaleString('ko-KR');
-                
+
                 row.innerHTML = `
-                    <td class="px-4 py-3 text-sm text-gray-900" title="${file.fileName}">
+                    <td class="px-4 py-3 text-sm text-slate-700" title="${file.fileName}">
                         ${fileName}
                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-900">
+                    <td class="px-4 py-3 text-sm text-slate-700">
                         ${fileSize} MB
                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-900">
+                    <td class="px-4 py-3 text-sm text-slate-700">
                         ${createdDate}
                     </td>
                     <td class="px-4 py-3 text-sm">
                         <button onclick="downloadFile('${file.downloadUrl}', '${file.fileName}')"
-                                class="inline-flex items-center px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                                class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
                             다운로드
                         </button>
                     </td>
                     <td class="px-4 py-3 text-sm">
-                        <button onclick="togglePlay('${file.downloadUrl}', this)" 
-                                class="inline-flex items-center px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                        <button onclick="togglePlay('${file.downloadUrl}', this)"
+                                class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors shadow-sm">
                             재생
                         </button>
                     </td>
                 `;
-                
+
                 tableBody.appendChild(row);
             });
         }
 
-        // 통계 업데이트
+        // Update statistics
         function updateStatistics(files) {
             const totalFiles = files.length;
             const totalSize = files.reduce((sum, file) => sum + file.fileSize, 0);
-            const latestFile = files.length > 0 ? 
+            const latestFile = files.length > 0 ?
                 new Date(files[0].createdAt).toLocaleDateString('ko-KR') : '-';
 
             document.getElementById('statTotalFiles').textContent = totalFiles;
@@ -470,7 +1327,7 @@
             document.getElementById('statLatestFile').textContent = latestFile;
         }
 
-        // MP3 재생/정지
+        // MP3 play/stop
         function togglePlay(url, button) {
             if (currentAudio && !currentAudio.paused) {
                 currentAudio.pause();
@@ -484,36 +1341,33 @@
             }
 
             try {
-                // 현재 프로토콜과 호스트 사용
                 const currentProtocol = window.location.protocol;
                 const currentHost = window.location.host;
                 const urlFileName = url.split('/').pop();
-                
+
                 let audioUrl = url;
                 if (url.includes(window.location.hostname)) {
-                    // 오디오 전용 엔드포인트 사용
                     audioUrl = `${currentProtocol}//${currentHost}/audio/${urlFileName}`;
                 }
-                
+
                 console.log('재생 URL:', audioUrl);
-                
+
                 currentAudio = new Audio();
                 currentAudio.preload = 'metadata';
                 currentAudio.crossOrigin = 'anonymous';
-                
-                // 로딩 상태 표시
+
                 button.textContent = '로딩중...';
                 button.disabled = true;
-                
+
                 currentAudio.addEventListener('loadstart', () => {
                     console.log('오디오 로딩 시작');
                 });
-                
+
                 currentAudio.addEventListener('canplay', () => {
                     console.log('오디오 재생 준비 완료');
                     button.textContent = '정지';
                     button.disabled = false;
-                    
+
                     currentAudio.play().catch(error => {
                         console.error('재생 오류:', error);
                         button.textContent = '재생';
@@ -521,12 +1375,12 @@
                         alert(`MP3 재생 중 오류가 발생했습니다: ${error.message}`);
                     });
                 });
-                
+
                 currentAudio.addEventListener('error', (e) => {
                     console.error('오디오 로드 오류:', e, currentAudio.error);
                     button.textContent = '재생';
                     button.disabled = false;
-                    
+
                     let errorMsg = 'MP3 파일을 로드할 수 없습니다.';
                     if (currentAudio.error) {
                         switch(currentAudio.error.code) {
@@ -547,11 +1401,10 @@
                 currentAudio.onended = () => {
                     resetAllPlayButtons();
                 };
-                
-                // 오디오 소스 설정 및 로드
+
                 currentAudio.src = audioUrl;
                 currentAudio.load();
-                
+
             } catch (error) {
                 console.error('재생 초기화 오류:', error);
                 button.textContent = '재생';
@@ -560,7 +1413,7 @@
             }
         }
 
-        // 모든 재생 버튼 초기화
+        // Reset all play buttons
         function resetAllPlayButtons() {
             const playButtons = document.querySelectorAll('button[onclick*="togglePlay"]');
             playButtons.forEach(button => {
@@ -573,14 +1426,14 @@
             }
         }
 
-        // 파일 목록 새로고침
+        // Refresh file list
         function refreshFiles() {
             if (currentTab === 'files') {
                 loadFiles();
             }
         }
 
-        // 로딩 표시
+        // Show loading
         function showFilesLoading() {
             document.getElementById('filesLoading').classList.remove('hidden');
             document.getElementById('filesList').classList.add('hidden');
@@ -588,7 +1441,7 @@
             document.getElementById('filesError').classList.add('hidden');
         }
 
-        // 오류 표시
+        // Show error
         function showFilesError() {
             document.getElementById('filesLoading').classList.add('hidden');
             document.getElementById('filesList').classList.add('hidden');
@@ -596,97 +1449,63 @@
             document.getElementById('filesError').classList.remove('hidden');
         }
 
-        // 보안 다운로드 함수
-        async function downloadFile(url, fileName) {
-            try {
-                // 현재 도메인 사용 (프로토콜 자동 매칭)
-                const currentProtocol = window.location.protocol;
-                const currentHost = window.location.host;
-                
-                // URL에서 파일명 추출
-                const urlFileName = url.split('/').pop();
-                let downloadUrl = url;
-                
-                // 같은 도메인인 경우 현재 프로토콜 사용
-                if (url.includes(window.location.hostname)) {
-                    downloadUrl = `${currentProtocol}//${currentHost}/uploads/${urlFileName}`;
-                }
-                
-                console.log('다운로드 URL:', downloadUrl);
-                
-                const response = await fetch(downloadUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'audio/mpeg,*/*'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = fileName;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                // 메모리 정리
-                setTimeout(() => {
-                    window.URL.revokeObjectURL(blobUrl);
-                }, 1000);
-                
-            } catch (error) {
-                console.error('다운로드 오류:', error);
-                alert(`다운로드 중 오류가 발생했습니다: ${error.message}`);
+        // Download function
+        function downloadFile(url, fileName) {
+            const currentProtocol = window.location.protocol;
+            const currentHost = window.location.host;
+
+            const urlFileName = url.split('/').pop();
+            let downloadUrl = url;
+
+            if (url.includes(window.location.hostname)) {
+                const encodedFileName = encodeURIComponent(urlFileName);
+                downloadUrl = `${currentProtocol}//${currentHost}/uploads/${encodedFileName}`;
             }
+
+            console.log('다운로드 URL:', downloadUrl);
+
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = fileName;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
-        // 변환 결과 다운로드
+        // Download conversion result
         let resultDownloadUrl = '';
         let resultFileName = '';
-        
+
         function downloadResult() {
             if (resultDownloadUrl && resultFileName) {
                 downloadFile(resultDownloadUrl, resultFileName);
             }
         }
 
-                // 시간 형식 유효성 검사 (강화된 버전 + 모바일 지원)
+        // Time format validation (enhanced + mobile support)
         function isValidTimeFormat(time) {
             if (!time || typeof time !== 'string') {
                 console.log('시간 검증 실패: 빈 값 또는 문자열이 아님', time);
                 return false;
             }
-            
-            // 공백 제거
+
             time = time.trim();
-            
-            // 지원하는 패턴들
+
             const patterns = [
-                // HH:MM:SS 형식 (시:분:초)
                 /^([0-9]|[0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/,
-                // MM:SS 형식 (분:초)
                 /^([0-5]?[0-9]):([0-5][0-9])$/,
-                // H:MM:SS 형식 (한 자리 시간)
                 /^([0-9]):([0-5][0-9]):([0-5][0-9])$/,
-                // 유연한 형식들 (모바일에서 자주 발생)
-                /^([0-9]{1,2}):([0-9]{1,2})$/,        // M:S 또는 MM:S 또는 M:SS
-                /^([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})$/ // H:M:S 등
+                /^([0-9]{1,2}):([0-9]{1,2})$/,
+                /^([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})$/
             ];
-            
+
             for (let pattern of patterns) {
                 const match = time.match(pattern);
                 if (match) {
-                    // 추가 검증: 분과 초가 60 미만인지 확인
                     const parts = time.split(':').map(num => parseInt(num));
-                    
-                    if (parts.length === 3) { // HH:MM:SS
+
+                    if (parts.length === 3) {
                         const [hours, minutes, seconds] = parts;
                         const valid = hours >= 0 && hours <= 23 &&
                                       minutes >= 0 && minutes <= 59 &&
@@ -695,9 +1514,9 @@
                             console.log('시간 검증 실패: 범위 초과', { hours, minutes, seconds });
                         }
                         return valid;
-                    } else if (parts.length === 2) { // MM:SS
+                    } else if (parts.length === 2) {
                         const [minutes, seconds] = parts;
-                        const valid = minutes >= 0 && minutes <= 999 && // 긴 동영상을 위해 분은 제한 완화
+                        const valid = minutes >= 0 && minutes <= 999 &&
                                       seconds >= 0 && seconds <= 59;
                         if (!valid) {
                             console.log('시간 검증 실패: 범위 초과', { minutes, seconds });
@@ -706,29 +1525,27 @@
                     }
                 }
             }
-            
+
             console.log('시간 검증 실패: 패턴 불일치', time);
             return false;
         }
 
-        // 시간을 ffmpeg 호환 형식으로 정규화 (모바일 지원 강화)
+        // Normalize time to ffmpeg compatible format (mobile support)
         function normalizeTime(time) {
             if (!time) return '0:00:00';
-            
+
             time = time.trim();
             const parts = time.split(':').map(part => parseInt(part) || 0);
-            
+
             console.log('시간 정규화 입력:', time, '파싱된 부분:', parts);
-            
+
             if (parts.length === 2) {
-                // MM:SS -> HH:MM:SS (0:MM:SS)
                 const [minutes, seconds] = parts;
                 const normalizedSeconds = Math.min(59, Math.max(0, seconds));
                 const result = `0:${minutes.toString().padStart(2, '0')}:${normalizedSeconds.toString().padStart(2, '0')}`;
                 console.log('시간 정규화 결과 (MM:SS):', result);
                 return result;
             } else if (parts.length === 3) {
-                // HH:MM:SS -> HH:MM:SS (패딩)
                 const [hours, minutes, seconds] = parts;
                 const normalizedHours = Math.max(0, hours);
                 const normalizedMinutes = Math.min(59, Math.max(0, minutes));
@@ -737,7 +1554,6 @@
                 console.log('시간 정규화 결과 (HH:MM:SS):', result);
                 return result;
             } else if (parts.length === 1) {
-                // 단일 숫자인 경우 초로 간주
                 const seconds = parts[0];
                 const minutes = Math.floor(seconds / 60);
                 const remainingSeconds = seconds % 60;
@@ -745,12 +1561,12 @@
                 console.log('시간 정규화 결과 (초만):', result);
                 return result;
             }
-            
+
             console.log('시간 정규화 실패, 원본 반환:', time);
             return time;
         }
 
-        // 시간을 초 단위로 변환
+        // Convert time to seconds
         function timeToSeconds(timeStr) {
             const parts = timeStr.split(':').map(num => parseInt(num));
             if (parts.length === 3) {
@@ -760,7 +1576,7 @@
             return 0;
         }
 
-        // 초를 시간 형식으로 변환
+        // Convert seconds to time format
         function secondsToTime(seconds) {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
@@ -768,18 +1584,18 @@
             return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
-        // 프로그레스 바 업데이트
+        // Update progress bar
         function updateProgress(percent, text) {
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
             const progressPercent = document.getElementById('progressPercent');
-            
+
             if (progressBar) progressBar.style.width = percent + '%';
             if (progressText) progressText.textContent = text;
             if (progressPercent) progressPercent.textContent = Math.round(percent) + '%';
         }
 
-        // 프로그레스 시뮬레이션 (실제 진행률을 추정)
+        // Simulate progress
         function simulateProgress() {
             let progress = 0;
             const steps = [
@@ -791,7 +1607,7 @@
             ];
 
             let currentStep = 0;
-            
+
             function nextStep() {
                 if (currentStep < steps.length) {
                     const step = steps[currentStep];
@@ -800,83 +1616,256 @@
                     setTimeout(nextStep, step.delay);
                 }
             }
-            
+
             nextStep();
         }
 
-        // 모바일 친화적 시간 입력 도우미
-        function showTimeHelper(inputId) {
-            const minutes = prompt('분을 입력하세요 (0-999):');
-            if (minutes === null) return;
-            
-            const seconds = prompt('초를 입력하세요 (0-59):');
-            if (seconds === null) return;
-            
-            const minutesNum = parseInt(minutes) || 0;
-            const secondsNum = parseInt(seconds) || 0;
-            
-            if (minutesNum < 0 || secondsNum < 0 || secondsNum > 59) {
-                alert('올바른 숫자를 입력해주세요.\n분: 0 이상\n초: 0-59');
-                return;
-            }
-            
-            const timeString = `${minutesNum}:${secondsNum.toString().padStart(2, '0')}`;
-            document.getElementById(inputId).value = timeString;
-            
-            // 검증 트리거
-            validateTimeInput(inputId);
+        // === 시간 휠 UI ===
+        // 한 휠 단위 조정 (시/분/초, +1/-1) - 시간이 3시간을 넘지 않도록 클램프
+        function adjustWheel(btn, delta) {
+            const wheel = btn.closest('.time-wheel');
+            if (!wheel) return;
+            const valueEl = wheel.querySelector('.wheel-value');
+            const min = parseInt(wheel.dataset.min);
+            const max = parseInt(wheel.dataset.max);
+            let v = parseInt(valueEl.textContent, 10) || 0;
+            v += delta;
+            if (v < min) v = max;       // 순환
+            if (v > max) v = min;
+            const unit = wheel.dataset.unit;
+            valueEl.textContent = (unit === 'h') ? String(v) : String(v).padStart(2, '0');
+            // 시각 피드백
+            valueEl.classList.add('flash');
+            setTimeout(() => valueEl.classList.remove('flash'), 120);
+            syncTimeWheelGroup(wheel.closest('.time-wheel-group'));
         }
 
-        // 실시간 진행상황 모니터링
+        // 휠 그룹의 시:분:초를 합쳐 hidden input + display 업데이트, 3시간 클램프
+        function syncTimeWheelGroup(group) {
+            if (!group) return;
+            const target = group.dataset.target;
+            const wheels = group.querySelectorAll('.time-wheel');
+            let h = 0, m = 0, s = 0;
+            wheels.forEach(w => {
+                const v = parseInt(w.querySelector('.wheel-value').textContent, 10) || 0;
+                if (w.dataset.unit === 'h') h = v;
+                else if (w.dataset.unit === 'm') m = v;
+                else s = v;
+            });
+            // 3시간 클램프
+            let totalSec = h * 3600 + m * 60 + s;
+            const MAX_SEC = 3 * 3600;
+            if (totalSec > MAX_SEC) {
+                totalSec = MAX_SEC;
+                h = 3; m = 0; s = 0;
+                wheels.forEach(w => {
+                    const ve = w.querySelector('.wheel-value');
+                    if (w.dataset.unit === 'h') ve.textContent = '3';
+                    else ve.textContent = '00';
+                });
+            }
+            const timeStr = `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            const input = document.getElementById(target);
+            if (input) {
+                // 0:00:00 이면 빈값 (전체 영상 의미)
+                input.value = (totalSec === 0) ? '' : timeStr;
+            }
+            const display = document.getElementById(target + 'Display');
+            if (display) {
+                display.textContent = timeStr;
+                display.classList.toggle('text-slate-400', totalSec === 0);
+                display.classList.toggle('text-indigo-700', totalSec > 0);
+                display.classList.toggle('font-bold', totalSec > 0);
+            }
+        }
+
+        // 모든 휠 초기화
+        function resetTimeWheels() {
+            document.querySelectorAll('.time-wheel-group').forEach(group => {
+                group.querySelectorAll('.time-wheel').forEach(w => {
+                    const ve = w.querySelector('.wheel-value');
+                    ve.textContent = (w.dataset.unit === 'h') ? '0' : '00';
+                });
+                syncTimeWheelGroup(group);
+            });
+            showToast('시간이 초기화되었습니다 (전체 영상).', 'info');
+        }
+
+        // 빠른 선택 프리셋
+        function quickSetTime(sH, sM, sS, eH, eM, eS) {
+            setWheelGroup('start', sH, sM, sS);
+            setWheelGroup('end', eH, eM, eS);
+        }
+
+        function setWheelGroup(target, h, m, s) {
+            const group = document.querySelector(`.time-wheel-group[data-target="${target}"]`);
+            if (!group) return;
+            group.querySelectorAll('.time-wheel').forEach(w => {
+                const ve = w.querySelector('.wheel-value');
+                if (w.dataset.unit === 'h') ve.textContent = String(h);
+                else if (w.dataset.unit === 'm') ve.textContent = String(m).padStart(2, '0');
+                else ve.textContent = String(s).padStart(2, '0');
+            });
+            syncTimeWheelGroup(group);
+        }
+
+        // 휠 인터랙션 바인딩 (마우스 휠 / 드래그 / 키보드)
+        function bindTimeWheelInteractions() {
+            document.querySelectorAll('.time-wheel').forEach(wheel => {
+                const valueEl = wheel.querySelector('.wheel-value');
+                if (!valueEl || valueEl.dataset.bound) return;
+                valueEl.dataset.bound = '1';
+                valueEl.tabIndex = 0;
+
+                // 마우스 휠 스크롤
+                wheel.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    // 위로 = 증가, 아래로 = 감소 (스피너 통상 방향)
+                    const delta = e.deltaY < 0 ? 1 : -1;
+                    adjustWheel(valueEl, delta);
+                }, { passive: false });
+
+                // 드래그 (수직 이동)
+                let dragStartY = null;
+                let dragStartVal = 0;
+                let dragMoved = false;
+                valueEl.addEventListener('mousedown', (e) => {
+                    dragStartY = e.clientY;
+                    dragStartVal = parseInt(valueEl.textContent, 10) || 0;
+                    dragMoved = false;
+                    valueEl.classList.add('active');
+                    e.preventDefault();
+                });
+                window.addEventListener('mousemove', (e) => {
+                    if (dragStartY === null) return;
+                    const dy = dragStartY - e.clientY;
+                    const step = Math.floor(dy / 12); // 12px당 1단위
+                    if (step !== 0) {
+                        dragMoved = true;
+                        const min = parseInt(wheel.dataset.min);
+                        const max = parseInt(wheel.dataset.max);
+                        let v = dragStartVal + step;
+                        // 클램프 (드래그는 순환 X, 한계까지만)
+                        if (v < min) v = min;
+                        if (v > max) v = max;
+                        const unit = wheel.dataset.unit;
+                        valueEl.textContent = (unit === 'h') ? String(v) : String(v).padStart(2, '0');
+                        syncTimeWheelGroup(wheel.closest('.time-wheel-group'));
+                    }
+                });
+                window.addEventListener('mouseup', () => {
+                    if (dragStartY !== null) {
+                        valueEl.classList.remove('active');
+                        // 데스크톱에서만 드래그 없이 클릭하면 +1 (모바일은 바텀시트가 처리)
+                        if (!dragMoved && !window.matchMedia('(max-width: 767px)').matches) {
+                            adjustWheel(valueEl, 1);
+                        }
+                    }
+                    dragStartY = null;
+                });
+
+                // 키보드 (포커스 후 위/아래)
+                valueEl.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowUp') { e.preventDefault(); adjustWheel(valueEl, 1); }
+                    else if (e.key === 'ArrowDown') { e.preventDefault(); adjustWheel(valueEl, -1); }
+                    else if (e.key === 'PageUp') { e.preventDefault(); adjustWheel(valueEl, 10); }
+                    else if (e.key === 'PageDown') { e.preventDefault(); adjustWheel(valueEl, -10); }
+                });
+
+                // 터치 스와이프 (모바일)
+                let touchStartY = null;
+                let touchStartVal = 0;
+                valueEl.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                    touchStartVal = parseInt(valueEl.textContent, 10) || 0;
+                    valueEl.classList.add('active');
+                }, { passive: true });
+                valueEl.addEventListener('touchmove', (e) => {
+                    if (touchStartY === null) return;
+                    const dy = touchStartY - e.touches[0].clientY;
+                    const step = Math.floor(dy / 15);
+                    if (step !== 0) {
+                        const min = parseInt(wheel.dataset.min);
+                        const max = parseInt(wheel.dataset.max);
+                        let v = touchStartVal + step;
+                        if (v < min) v = min;
+                        if (v > max) v = max;
+                        const unit = wheel.dataset.unit;
+                        valueEl.textContent = (unit === 'h') ? String(v) : String(v).padStart(2, '0');
+                        syncTimeWheelGroup(wheel.closest('.time-wheel-group'));
+                    }
+                }, { passive: true });
+                valueEl.addEventListener('touchend', () => {
+                    valueEl.classList.remove('active');
+                    touchStartY = null;
+                });
+            });
+        }
+
+        // 페이지 로드 시 휠 인터랙션 바인딩
+        document.addEventListener('DOMContentLoaded', () => {
+            bindTimeWheelInteractions();
+            // 초기 동기화
+            document.querySelectorAll('.time-wheel-group').forEach(syncTimeWheelGroup);
+        });
+
+        // 하위 호환: 기존 호출이 있을 경우 휠로 포커스
+        function showTimeHelper(inputId) {
+            const wheel = document.querySelector(`.time-wheel-group[data-target="${inputId}"] .wheel-value`);
+            if (wheel) wheel.focus();
+        }
+
+        // Real-time progress monitoring
         function monitorProgress(jobId) {
             console.log('진행상황 모니터링 시작:', jobId);
-            
+
             const eventSource = new EventSource(`/api/progress/${jobId}`);
-            
+
             eventSource.onmessage = function(event) {
                 try {
                     const data = JSON.parse(event.data);
                     console.log('진행상황 업데이트:', data);
-                    
+
                     switch(data.type) {
                         case 'connected':
                             updateProgress(0, '연결됨');
                             break;
-                            
+
                         case 'started':
                             updateProgress(data.progress || 0, data.message || '시작됨');
                             break;
-                            
+
                         case 'progress':
                             updateProgress(data.progress || 0, data.message || '진행 중...');
                             break;
-                            
+
                         case 'completed':
                             updateProgress(100, '완료!');
                             setTimeout(() => {
                                 const loadingDiv = document.getElementById('loading');
                                 const successDiv = document.getElementById('success');
-                                
+
                                 loadingDiv.classList.add('hidden');
-                                document.getElementById('successMessage').textContent = 
+                                document.getElementById('successMessage').textContent =
                                     `파일: ${data.fileName} (${(data.fileSize / 1024 / 1024).toFixed(2)} MB)`;
-                                
-                                // 다운로드 정보 저장
+
                                 resultDownloadUrl = data.downloadUrl;
                                 resultFileName = data.fileName;
-                                
+
                                 successDiv.classList.remove('hidden');
+                                lucide.createIcons();
                                 eventSource.close();
                             }, 1000);
                             break;
-                            
+
                         case 'error':
                             const loadingDiv = document.getElementById('loading');
                             const errorDiv = document.getElementById('error');
-                            
+
                             loadingDiv.classList.add('hidden');
                             document.getElementById('errorMessage').textContent = data.message || '오류가 발생했습니다.';
                             errorDiv.classList.remove('hidden');
+                            lucide.createIcons();
                             eventSource.close();
                             break;
                     }
@@ -884,18 +1873,957 @@
                     console.error('진행상황 파싱 오류:', error);
                 }
             };
-            
+
             eventSource.onerror = function(event) {
                 console.error('SSE 연결 오류:', event);
                 const loadingDiv = document.getElementById('loading');
                 const errorDiv = document.getElementById('error');
-                
+
                 loadingDiv.classList.add('hidden');
                 document.getElementById('errorMessage').textContent = '연결이 끊어졌습니다. 다시 시도해주세요.';
                 errorDiv.classList.remove('hidden');
                 eventSource.close();
             };
         }
+
+        // SUMMARY CRUD
+        async function loadSummary(page=1, forceRefresh=false) {
+            const q = document.getElementById('summarySearch')?.value || '';
+            // 검색이나 페이지 변경 시 캐시 무효화
+            if (forceRefresh || q) summaryCache = null;
+            const resp = await fetch(`/api/summary?page=${page}&limit=20&q=${encodeURIComponent(q)}`);
+            const data = await resp.json();
+            summaryCache = data;
+            const tbody = document.getElementById('summaryTableBody');
+            const mobileList = document.getElementById('summaryMobileList');
+            tbody.innerHTML = '';
+            if (mobileList) mobileList.innerHTML = '';
+
+            const items = data.items || [];
+
+            if (items.length === 0 && mobileList) {
+                mobileList.innerHTML = `<div class="text-center py-8 text-slate-500 text-sm">등록된 요약이 없습니다.</div>`;
+            }
+
+            items.forEach(item => {
+                // === 데스크톱 테이블 행 ===
+                const tr = document.createElement('tr');
+                tr.className = 'warm-row';
+                tr.setAttribute('data-summary-id', item.id);
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-lg text-slate-800 align-top"><div class="clamp-5">${escapeHtml(item.jemok || '')} <span class="text-slate-400 text-sm">${formatDate(item.created_at)}</span></div></td>
+                    <td class="px-4 py-3 text-sm text-slate-700 align-top"><div class="clamp-5 whitespace-pre-wrap">${escapeHtml(item.bonmun || '')}</div></td>
+                    <td class="px-4 py-3 text-sm align-top">
+                        <button class="text-indigo-700 hover:text-indigo-500 mr-2 font-medium" onclick="viewSummaryInline(${item.id}, this)">보기</button>
+                        <button id="htmlBtn_${item.id}" class="text-violet-700 hover:text-violet-500 mr-2 font-medium inline-flex items-center gap-1" onclick="generateHTML(${item.id})"><i data-lucide="file-code" class="w-3.5 h-3.5"></i>HTML</button>
+                        <button id="mp4Btn_${item.id}" class="text-rose-700 hover:text-rose-500 mr-2 font-medium inline-flex items-center gap-1" onclick="generateMp4Summary(${item.id})"><i data-lucide="clapperboard" class="w-3.5 h-3.5"></i>MP4요약</button>
+                        <button class="text-red-600 hover:text-red-400 font-medium" onclick="deleteSummary(${item.id})">삭제</button>
+                    </td>`;
+                tbody.appendChild(tr);
+
+                // === 모바일 카드 ===
+                if (mobileList) {
+                    const card = document.createElement('div');
+                    card.className = 'summary-mobile-card bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm active:bg-slate-50 transition-colors';
+                    card.setAttribute('data-summary-id', item.id);
+                    // 본문 미리보기: 마크다운 기호/공백 정리 후 50자
+                    const bonmunRaw = (item.bonmun || '').replace(/[#*`_~>\-]+/g, '').replace(/\s+/g, ' ').trim();
+                    const bonmunPreview = bonmunRaw.length > 50 ? bonmunRaw.slice(0, 50) + '…' : bonmunRaw;
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between gap-2 mb-1.5">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[11px] text-indigo-600 font-medium flex items-center gap-1 mb-0.5">
+                                    <i data-lucide="calendar" class="w-3 h-3"></i>${formatDate(item.created_at)}
+                                </div>
+                                <h3 class="text-base font-semibold text-slate-800 leading-snug break-words">${escapeHtml(item.jemok || '(제목 없음)')}</h3>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-600 mb-3 leading-relaxed">${escapeHtml(bonmunPreview) || '<span class="text-slate-400">(본문 없음)</span>'}</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="copyBonmunFromCard(${item.id}, this)" class="flex-1 min-w-[110px] inline-flex items-center justify-center gap-1.5 bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 active:bg-emerald-800 transition-colors shadow-sm">
+                                <i data-lucide="clipboard-copy" class="w-4 h-4"></i>본문 복사
+                            </button>
+                            <button onclick="viewSummaryInline(${item.id}, this)" class="inline-flex items-center justify-center gap-1 bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-lg text-sm hover:bg-indigo-100 transition-colors">
+                                <i data-lucide="eye" class="w-4 h-4"></i>보기
+                            </button>
+                            <button onclick="generateHTML(${item.id})" id="mobileHtmlBtn_${item.id}" class="inline-flex items-center justify-center gap-1 bg-violet-50 text-violet-700 border border-violet-200 px-3 py-2 rounded-lg text-sm hover:bg-violet-100 transition-colors">
+                                <i data-lucide="file-code" class="w-4 h-4"></i>HTML
+                            </button>
+                            <button onclick="generateMp4Summary(${item.id})" id="mobileMp4Btn_${item.id}" class="inline-flex items-center justify-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-3 py-2 rounded-lg text-sm hover:bg-rose-100 transition-colors">
+                                <i data-lucide="clapperboard" class="w-4 h-4"></i>MP4요약
+                            </button>
+                            <button onclick="deleteSummary(${item.id})" class="inline-flex items-center justify-center gap-1 bg-red-50 text-red-600 border border-red-200 px-3 py-2 rounded-lg text-sm hover:bg-red-100 transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>`;
+                    mobileList.appendChild(card);
+                }
+            });
+
+            // lucide 아이콘 새로고침
+            if (window.lucide) lucide.createIcons();
+
+            renderSummaryPagination(data.pagination || { currentPage:1, totalPages:1 });
+        }
+
+        // 모바일 카드에서 본문 복사 - 서버에서 전체 본문 가져와 클립보드로
+        async function copyBonmunFromCard(id, btn) {
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>가져오는 중';
+            if (window.lucide) lucide.createIcons();
+            try {
+                const resp = await fetch(`/api/summary/${id}`);
+                const data = await resp.json();
+                const text = (data.item && data.item.bonmun) || '';
+                if (!text.trim()) {
+                    showToast('복사할 본문이 없습니다.', 'warning');
+                    btn.innerHTML = originalHtml;
+                    if (window.lucide) lucide.createIcons();
+                    return;
+                }
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                }
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i>복사됨!';
+                btn.classList.remove('bg-emerald-600');
+                btn.classList.add('bg-green-700');
+                if (window.lucide) lucide.createIcons();
+                showToast(`본문 ${text.length.toLocaleString()}자가 복사되었습니다.`, 'success');
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.remove('bg-green-700');
+                    btn.classList.add('bg-emerald-600');
+                    if (window.lucide) lucide.createIcons();
+                }, 1500);
+            } catch (err) {
+                console.error('본문 복사 실패:', err);
+                showToast('본문 복사 실패: ' + err.message, 'error');
+                btn.innerHTML = originalHtml;
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function renderSummaryPagination(p) {
+            const el = document.getElementById('summaryPagination');
+            if (!p || p.totalPages <= 1) { el.innerHTML = ''; return; }
+            let html = '<div class="flex space-x-2">';
+            for (let i=1;i<=p.totalPages;i++) {
+                html += `<button onclick="loadSummary(${i})" class="px-3 py-1 rounded-lg ${i===p.currentPage?'bg-indigo-600 text-white shadow-sm':'bg-slate-100 text-slate-700 hover:bg-slate-200'} transition-colors">${i}</button>`;
+            }
+            html += '</div>';
+            el.innerHTML = html;
+        }
+
+        async function deleteSummary(id) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+            const resp = await fetch(`/api/summary/${id}`, { method:'DELETE' });
+            await resp.json();
+            summaryCache = null;
+            loadSummary(1);
+        }
+
+        async function viewSummaryInline(id, btn) {
+            // 이미 열린 인라인 상세가 있으면 닫기
+            const existing = document.querySelector('.summary-inline-detail');
+            if (existing) {
+                const existingId = existing.getAttribute('data-inline-id');
+                existing.remove();
+                // 같은 항목을 다시 클릭하면 토글(닫기)
+                if (parseInt(existingId) === id) return;
+            }
+
+            // 클릭한 버튼의 부모 행 찾기
+            const parentRow = btn.closest('tr');
+
+            // 로딩 행 삽입
+            const loadingRow = document.createElement('tr');
+            loadingRow.className = 'summary-inline-detail';
+            loadingRow.setAttribute('data-inline-id', id);
+            loadingRow.innerHTML = `<td colspan="3" class="px-4 py-6 bg-slate-50/70"><div class="text-center text-indigo-600"><div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600 mr-2"></div>불러오는 중...</div></td>`;
+            parentRow.after(loadingRow);
+
+            // 데이터 가져오기
+            const resp = await fetch(`/api/summary/${id}`);
+            const data = await resp.json();
+            const item = data.item || {};
+            window._summaryEditingId = item.id;
+
+            // 인라인 상세 내용으로 교체
+            loadingRow.innerHTML = `
+                <td colspan="3" class="p-0">
+                    <div class="border-t-2 border-b-2 border-indigo-200 bg-slate-50/70 p-5">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-semibold font-serif text-slate-800 flex items-center gap-2">
+                                <i data-lucide="file-text" class="w-5 h-5 text-indigo-600"></i>
+                                상세 보기
+                            </h3>
+                            <div class="space-x-2">
+                                <button onclick="copyFieldToClipboard('inlineTitle', this)" class="text-sm bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors border border-slate-300 inline-flex items-center gap-1">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>제목
+                                </button>
+                                <button onclick="copyFieldToClipboard('inlineBonmun', this)" class="text-sm bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors border border-emerald-300 inline-flex items-center gap-1">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>본문 복사
+                                </button>
+                                <button onclick="saveSummaryInline()" class="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">저장</button>
+                                <button onclick="closeSummaryInline()" class="text-sm text-slate-600 hover:text-slate-800 px-3 py-1.5 border border-slate-300 rounded-lg hover:bg-slate-100">닫기</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-xs text-slate-600 mb-1 font-medium">제목</div>
+                            <input id="inlineTitle" value="${escapeHtml(item.jemok || '')}" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white" />
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="text-xs text-slate-600 font-medium">본문 - md 형식으로 본문 그대로 변환</div>
+                                <button onclick="copyFieldToClipboard('inlineBonmun', this)" class="text-xs text-emerald-700 hover:text-emerald-900 inline-flex items-center gap-1">
+                                    <i data-lucide="clipboard-copy" class="w-3.5 h-3.5"></i>복사
+                                </button>
+                            </div>
+                            <textarea id="inlineBonmun" class="w-full h-64 text-sm bg-white p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">${escapeHtml(item.bonmun || '')}</textarea>
+                        </div>
+                    </div>
+                </td>`;
+            lucide.createIcons();
+        }
+
+        function closeSummaryInline() {
+            const el = document.querySelector('.summary-inline-detail');
+            if (el) el.remove();
+            window._summaryEditingId = null;
+        }
+
+        async function saveSummaryInline() {
+            const id = window._summaryEditingId;
+            if (!id) return;
+            const jemok = document.getElementById('inlineTitle').value;
+            const bonmun = document.getElementById('inlineBonmun').value;
+            await fetch(`/api/summary/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({jemok, bonmun}) });
+            summaryCache = null;
+            closeSummaryInline();
+            loadSummary(1);
+        }
+
+        // 하단 패널 (하위 호환)
+        function closeSummaryDetail() {
+            document.getElementById('summaryDetail').classList.add('hidden');
+        }
+
+        // 필드 내용을 클립보드에 복사 (본문/요약/제목)
+        async function copyFieldToClipboard(fieldId, btn) {
+            const el = document.getElementById(fieldId);
+            if (!el) return;
+            const text = el.value || '';
+            if (!text.trim()) {
+                showToast('복사할 내용이 없습니다.', 'warning');
+                return;
+            }
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    // 폴백: 임시 textarea 사용
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                }
+                // 버튼 시각 피드백
+                if (btn) {
+                    const original = btn.innerHTML;
+                    btn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i>복사됨';
+                    btn.classList.add('bg-green-100', 'text-green-700');
+                    if (window.lucide) lucide.createIcons();
+                    setTimeout(() => {
+                        btn.innerHTML = original;
+                        btn.classList.remove('bg-green-100', 'text-green-700');
+                        if (window.lucide) lucide.createIcons();
+                    }, 1500);
+                }
+                showToast(`${text.length.toLocaleString()}자가 클립보드에 복사되었습니다.`, 'success');
+            } catch (err) {
+                console.error('클립보드 복사 실패:', err);
+                showToast('복사 실패: ' + err.message, 'error');
+            }
+        }
+
+        // 토스트 알림 (간단한 알림)
+        function showToast(msg, type = 'info') {
+            const colors = {
+                success: 'bg-green-600',
+                error: 'bg-red-600',
+                warning: 'bg-amber-500',
+                info: 'bg-slate-700'
+            };
+            const toast = document.createElement('div');
+            toast.className = `fixed top-5 right-5 ${colors[type] || colors.info} text-white px-5 py-3 rounded-lg shadow-xl z-[100] text-sm font-medium animate-slide-in`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.3s';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        function escapeHtml(s) { return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR');
+        }
+
+        // Close MD viewer
+        function closeMdViewer() {
+            document.getElementById('mdViewerModal').classList.add('hidden');
+        }
+
+        // HTML 정리 문서 생성 (본문을 AI로 정리 → 스탠드얼론 HTML 다운로드)
+        async function generateHTML(summaryId) {
+            if (!confirm('AI가 본문을 정리하여 HTML 문서를 생성합니다.\n약 30초~1분 정도 소요됩니다.\n계속하시겠습니까?')) return;
+
+            const btn = document.getElementById(`htmlBtn_${summaryId}`) || document.getElementById(`mobileHtmlBtn_${summaryId}`);
+            let originalHTML = '';
+            if (btn) {
+                originalHTML = btn.innerHTML;
+                btn.innerHTML = '<svg class="animate-spin w-3.5 h-3.5 inline mr-1" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"></path></svg>생성중...';
+                btn.disabled = true;
+                btn.classList.add('opacity-60');
+            }
+
+            try {
+                const resp = await fetch(`/api/summary/${summaryId}/html`, { method: 'POST' });
+                if (!resp.ok) {
+                    const errData = await resp.json().catch(() => ({}));
+                    throw new Error(errData.error || 'HTML 생성 실패');
+                }
+
+                // Content-Disposition에서 파일명 추출
+                const disposition = resp.headers.get('Content-Disposition') || '';
+                let fileName = '설교정리.html';
+                const match = disposition.match(/filename\*=UTF-8''(.+)/);
+                if (match) {
+                    fileName = decodeURIComponent(match[1]);
+                }
+
+                const blob = await resp.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                showToast('HTML 문서가 생성되었습니다.', 'success');
+            } catch (error) {
+                console.error('HTML 생성 오류:', error);
+                showToast('HTML 생성 중 오류가 발생했습니다: ' + error.message, 'error');
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-60');
+                }
+                lucide.createIcons();
+            }
+        }
+
+        // MP4 요약 생성 시작 (SUMMARY 탭 → 원본 URL 확인 후 파이프라인 트리거)
+        async function generateMp4Summary(summaryId) {
+            let url = '';
+            let jemok = '';
+            try {
+                const resp = await fetch(`/api/summary/${summaryId}`);
+                const data = await resp.json();
+                const item = data.item || {};
+                url = item.url || '';
+                jemok = item.jemok || '';
+            } catch (e) {
+                console.error('요약 조회 오류:', e);
+            }
+
+            if (!url) {
+                url = window.prompt('원본 YouTube URL을 입력하세요');
+                if (url === null || !url.trim()) return;
+                url = url.trim();
+            }
+
+            if (!confirm('설교 영상을 7~9분으로 요약한 MP4를 생성합니다.\n영상 다운로드/STT/편집으로 10분 이상 걸릴 수 있습니다.\n계속하시겠습니까?')) return;
+
+            try {
+                const resp = await fetch('/api/mp4-summary', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, title: jemok, summaryId })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    showToast('MP4 요약 생성이 시작되었습니다. MP4 탭에서 확인하세요.', 'success');
+                    mp4Cache = null;
+                    switchTab('mp4');
+                } else {
+                    showToast('MP4 요약 생성 실패: ' + (data.error || '알 수 없는 오류'), 'error');
+                }
+            } catch (error) {
+                console.error('MP4 요약 요청 오류:', error);
+                showToast('MP4 요약 요청 중 오류가 발생했습니다: ' + error.message, 'error');
+            }
+        }
+
+        // === MP4 요약 게시판 ===
+        async function loadMp4(page = 1, forceRefresh = false) {
+            const q = document.getElementById('mp4Search')?.value || '';
+            if (forceRefresh || q) mp4Cache = null;
+            let data;
+            try {
+                const resp = await fetch(`/api/mp4?page=${page}&limit=20&q=${encodeURIComponent(q)}`);
+                data = await resp.json();
+            } catch (e) {
+                console.error('MP4 목록 로드 오류:', e);
+                data = { items: [], pagination: { currentPage: 1, totalPages: 1 } };
+            }
+            mp4Cache = data;
+
+            const tbody = document.getElementById('mp4TableBody');
+            const mobileList = document.getElementById('mp4MobileList');
+            if (tbody) tbody.innerHTML = '';
+            if (mobileList) mobileList.innerHTML = '';
+
+            const items = data.items || [];
+
+            if (items.length === 0) {
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-500 text-sm">생성된 MP4 요약이 없습니다.</td></tr>`;
+                if (mobileList) mobileList.innerHTML = `<div class="text-center py-8 text-slate-500 text-sm">생성된 MP4 요약이 없습니다.</div>`;
+            }
+
+            let hasProcessing = false;
+
+            items.forEach(item => {
+                if (item.status === 'processing') hasProcessing = true;
+
+                const originalCell = mp4FileCell(item.original_url, item.original_file, item.status, item.error);
+                const summaryCell = mp4FileCell(item.summary_url, item.summary_file, item.status, item.error);
+
+                // 유튜브 링크 / 삭제
+                let actionHtml = '';
+                if (item.youtube_video_id) {
+                    actionHtml += `<a href="https://youtu.be/${escapeHtml(item.youtube_video_id)}" target="_blank" rel="noopener" class="text-red-600 hover:text-red-500 mr-2 font-medium inline-flex items-center gap-1"><i data-lucide="youtube" class="w-3.5 h-3.5"></i>YouTube</a>`;
+                }
+                actionHtml += `<button class="text-red-600 hover:text-red-400 font-medium inline-flex items-center gap-1" onclick="deleteMp4(${item.id})"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>삭제</button>`;
+
+                // === 데스크톱 행 ===
+                if (tbody) {
+                    const tr = document.createElement('tr');
+                    tr.className = 'warm-row';
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 text-sm text-slate-800 align-top"><div class="clamp-5">${escapeHtml(item.title || '(제목 없음)')}</div></td>
+                        <td class="px-4 py-3 text-sm text-slate-500 align-top">${formatDate(item.created_at)}</td>
+                        <td class="px-4 py-3 text-sm align-top">${originalCell}</td>
+                        <td class="px-4 py-3 text-sm align-top">${summaryCell}</td>
+                        <td class="px-4 py-3 text-sm align-top">${actionHtml}</td>`;
+                    tbody.appendChild(tr);
+                }
+
+                // === 모바일 카드 ===
+                if (mobileList) {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm';
+                    card.innerHTML = `
+                        <div class="flex items-center gap-1 text-[11px] text-indigo-600 font-medium mb-0.5">
+                            <i data-lucide="calendar" class="w-3 h-3"></i>${formatDate(item.created_at)}
+                        </div>
+                        <h3 class="text-base font-semibold text-slate-800 leading-snug break-words mb-2.5">${escapeHtml(item.title || '(제목 없음)')}</h3>
+                        <div class="grid grid-cols-2 gap-2 mb-2.5">
+                            <div>
+                                <div class="text-[11px] text-slate-500 mb-1">원본 MP4</div>
+                                ${originalCell}
+                            </div>
+                            <div>
+                                <div class="text-[11px] text-slate-500 mb-1">요약 MP4</div>
+                                ${summaryCell}
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">${actionHtml}</div>`;
+                    mobileList.appendChild(card);
+                }
+            });
+
+            if (window.lucide) lucide.createIcons();
+            renderMp4Pagination(data.pagination || { currentPage: 1, totalPages: 1 });
+
+            // processing 항목 유무에 따라 자동 새로고침 관리 (mp4 탭일 때만)
+            if (hasProcessing && currentTab === 'mp4') {
+                startMp4AutoRefresh();
+            } else {
+                stopMp4AutoRefresh();
+            }
+        }
+
+        // MP4 파일 셀 렌더 (재생/다운로드 링크 또는 상태 배지)
+        function mp4FileCell(fileUrl, fileName, status, error) {
+            if (fileUrl && fileName) {
+                return `
+                    <div class="flex flex-col gap-1">
+                        <a href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener" class="text-indigo-700 hover:text-indigo-500 font-medium inline-flex items-center gap-1"><i data-lucide="play" class="w-3.5 h-3.5"></i>재생</a>
+                        <a href="${escapeHtml(fileUrl)}" download="${escapeHtml(fileName)}" class="text-slate-600 hover:text-slate-800 inline-flex items-center gap-1"><i data-lucide="download" class="w-3.5 h-3.5"></i>다운로드</a>
+                    </div>`;
+            }
+            if (status === 'processing') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"><i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>생성 중...</span>`;
+            }
+            if (status === 'failed') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200" title="${escapeHtml(error || '오류')}"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>오류</span>`;
+            }
+            return `<span class="text-slate-400 text-xs">-</span>`;
+        }
+
+        function renderMp4Pagination(p) {
+            const el = document.getElementById('mp4Pagination');
+            if (!el) return;
+            if (!p || p.totalPages <= 1) { el.innerHTML = ''; return; }
+            let html = '<div class="flex space-x-2">';
+            for (let i = 1; i <= p.totalPages; i++) {
+                html += `<button onclick="loadMp4(${i})" class="px-3 py-1 rounded-lg ${i === p.currentPage ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} transition-colors">${i}</button>`;
+            }
+            html += '</div>';
+            el.innerHTML = html;
+        }
+
+        async function deleteMp4(id) {
+            if (!confirm('이 MP4 요약 항목과 파일을 삭제하시겠습니까?')) return;
+            try {
+                const resp = await fetch(`/api/mp4/${id}`, { method: 'DELETE' });
+                await resp.json();
+                mp4Cache = null;
+                loadMp4(1);
+                showToast('삭제되었습니다.', 'success');
+            } catch (error) {
+                console.error('MP4 삭제 오류:', error);
+                showToast('삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // processing 항목이 있을 때 15초 간격 자동 새로고침 (mp4 탭일 때만)
+        function startMp4AutoRefresh() {
+            if (mp4RefreshInterval) return;   // 이미 동작 중이면 중복 방지
+            mp4RefreshInterval = setInterval(() => {
+                if (currentTab !== 'mp4') { stopMp4AutoRefresh(); return; }
+                loadMp4(1, true);
+            }, 15000);
+        }
+
+        function stopMp4AutoRefresh() {
+            if (mp4RefreshInterval) {
+                clearInterval(mp4RefreshInterval);
+                mp4RefreshInterval = null;
+            }
+        }
+    </script>
+
+    <!-- === 모바일 시간 선택 바텀시트 피커 (모바일 전용) === -->
+    <div id="mobileTimePicker" class="fixed inset-0 z-[200] hidden md:hidden" role="dialog" aria-modal="true">
+        <div class="picker-sheet-overlay absolute inset-0 bg-black/50" onclick="closeMobileTimePicker()"></div>
+        <div class="picker-sheet absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl pb-safe">
+            <!-- 핸들 바 -->
+            <div class="flex justify-center pt-2.5 pb-1">
+                <div class="w-10 h-1 bg-slate-300 rounded-full"></div>
+            </div>
+            <!-- 헤더 -->
+            <div class="flex justify-between items-center px-5 py-3 border-b border-slate-100">
+                <button type="button" onclick="closeMobileTimePicker()" class="text-slate-500 text-base px-2 py-1 active:text-slate-700">취소</button>
+                <span id="mobilePickerTitle" class="font-semibold text-slate-800 text-base">시작 시간</span>
+                <button type="button" onclick="confirmMobileTimePicker()" class="text-indigo-600 text-base font-bold px-2 py-1 active:text-indigo-800">완료</button>
+            </div>
+
+            <!-- 빠른 프리셋 (모바일 전용 압축형) -->
+            <div class="px-4 pt-3 pb-1 flex gap-1.5 overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <button type="button" onclick="mobilePickerSetPreset(0,0,0)" class="flex-shrink-0 text-xs px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 rounded-full text-slate-600 border border-slate-200">0:00:00</button>
+                <button type="button" onclick="mobilePickerSetPreset(0,30,0)" class="flex-shrink-0 text-xs px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 rounded-full text-slate-600 border border-slate-200">0:30:00</button>
+                <button type="button" onclick="mobilePickerSetPreset(1,0,0)" class="flex-shrink-0 text-xs px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 rounded-full text-slate-600 border border-slate-200">1:00:00</button>
+                <button type="button" onclick="mobilePickerSetPreset(1,30,0)" class="flex-shrink-0 text-xs px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 rounded-full text-slate-600 border border-slate-200">1:30:00</button>
+                <button type="button" onclick="mobilePickerSetPreset(2,0,0)" class="flex-shrink-0 text-xs px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 rounded-full text-slate-600 border border-slate-200">2:00:00</button>
+                <button type="button" onclick="mobilePickerSetPreset(3,0,0)" class="flex-shrink-0 text-xs px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 rounded-full text-slate-600 border border-slate-200">3:00:00</button>
+            </div>
+
+            <!-- 자물쇠 다이얼 안내 -->
+            <div class="text-center text-xs text-slate-500 px-5 pt-2 pb-1">
+                🔒 다이얼을 손가락으로 <strong>돌려서</strong> 시간을 맞추세요
+            </div>
+
+            <!-- 3개 회전 다이얼 -->
+            <div class="grid grid-cols-3 gap-3 px-5 pt-4 pb-3 place-items-center">
+                <div id="dialHour" class="dial-container" data-unit="h" data-min="0" data-max="3" data-wrap="0">
+                    <div class="dial-pointer-fixed"></div>
+                    <div class="dial-rotating"></div>
+                    <div class="dial-value">0</div>
+                    <div class="dial-label">시</div>
+                </div>
+                <div id="dialMin" class="dial-container" data-unit="m" data-min="0" data-max="59" data-wrap="1">
+                    <div class="dial-pointer-fixed"></div>
+                    <div class="dial-rotating"></div>
+                    <div class="dial-value">00</div>
+                    <div class="dial-label">분</div>
+                </div>
+                <div id="dialSec" class="dial-container" data-unit="s" data-min="0" data-max="59" data-wrap="1">
+                    <div class="dial-pointer-fixed"></div>
+                    <div class="dial-rotating"></div>
+                    <div class="dial-value">00</div>
+                    <div class="dial-label">초</div>
+                </div>
+            </div>
+
+            <!-- 미세 조정 버튼 (다이얼 못 돌릴 경우 폴백) -->
+            <div class="grid grid-cols-3 gap-3 px-5 pt-1 pb-2 place-items-center">
+                <div class="flex gap-1">
+                    <button type="button" onclick="dialAdjust('dialHour', -1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-indigo-100 text-slate-700 text-lg flex items-center justify-center">−</button>
+                    <button type="button" onclick="dialAdjust('dialHour', 1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-indigo-100 text-slate-700 text-lg flex items-center justify-center">+</button>
+                </div>
+                <div class="flex gap-1">
+                    <button type="button" onclick="dialAdjust('dialMin', -1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-indigo-100 text-slate-700 text-lg flex items-center justify-center">−</button>
+                    <button type="button" onclick="dialAdjust('dialMin', 1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-indigo-100 text-slate-700 text-lg flex items-center justify-center">+</button>
+                </div>
+                <div class="flex gap-1">
+                    <button type="button" onclick="dialAdjust('dialSec', -1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-indigo-100 text-slate-700 text-lg flex items-center justify-center">−</button>
+                    <button type="button" onclick="dialAdjust('dialSec', 1)" class="w-8 h-8 rounded-full bg-slate-100 active:bg-indigo-100 text-slate-700 text-lg flex items-center justify-center">+</button>
+                </div>
+            </div>
+
+            <!-- 미리보기 -->
+            <div class="mt-2 mb-5 text-center">
+                <span class="text-xs text-slate-500">선택된 시간</span>
+                <div id="mobilePickerPreview" class="text-3xl font-bold text-indigo-700 font-mono mt-1">0:00:00</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === 모바일 바텀시트 - 자물쇠 회전 다이얼 ===
+        let _mobilePickerTarget = null;
+        let _dialsInitialized = false;
+        // 다이얼 상태: { value, rotation(누적 deg), valueAnglePer(deg/단위) }
+        const _dialStates = {};
+
+        // 다이얼 시각 빌드 (틱 마크 + 라벨)
+        function buildDialVisual(dial) {
+            const min = parseInt(dial.dataset.min);
+            const max = parseInt(dial.dataset.max);
+            const range = max - min + 1;
+            const rotating = dial.querySelector('.dial-rotating');
+            rotating.innerHTML = '';
+
+            // 시각 틱: 시(4) → 4틱 + 4라벨, 분/초(60) → 60틱 + 12라벨(0,5,...,55)
+            if (range <= 4) {
+                // 0,1,2,3 - 90° 간격
+                for (let i = 0; i < range; i++) {
+                    const angle = (i / range) * 360;
+                    const tick = document.createElement('div');
+                    tick.className = 'dial-tick major';
+                    tick.style.transform = `rotate(${angle}deg)`;
+                    rotating.appendChild(tick);
+                    // 라벨 (틱 안쪽)
+                    const label = document.createElement('div');
+                    label.className = 'dial-tick-label';
+                    label.textContent = String(min + i);
+                    const r = 35;     // 라벨 반경
+                    const rad = (angle - 90) * Math.PI / 180;
+                    const tx = Math.cos(rad) * r;
+                    const ty = Math.sin(rad) * r;
+                    label.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px))`;
+                    rotating.appendChild(label);
+                }
+            } else {
+                // 0~59 - 60틱, 12개 주요 (5단위)
+                for (let i = 0; i < 60; i++) {
+                    const angle = (i / 60) * 360;
+                    const tick = document.createElement('div');
+                    tick.className = 'dial-tick' + (i % 5 === 0 ? ' major' : '');
+                    tick.style.transform = `rotate(${angle}deg)`;
+                    rotating.appendChild(tick);
+                }
+                // 5단위 라벨 (0, 15, 30, 45만 표시 — 가독성)
+                [0, 15, 30, 45].forEach(v => {
+                    const angle = (v / 60) * 360;
+                    const label = document.createElement('div');
+                    label.className = 'dial-tick-label';
+                    label.textContent = String(v);
+                    const r = 35;
+                    const rad = (angle - 90) * Math.PI / 180;
+                    const tx = Math.cos(rad) * r;
+                    const ty = Math.sin(rad) * r;
+                    label.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px))`;
+                    rotating.appendChild(label);
+                });
+            }
+        }
+
+        // 다이얼 값 설정 (값 → 회전각 동기화)
+        function setDialValue(dialId, newValue, animate = true) {
+            const dial = document.getElementById(dialId);
+            if (!dial) return;
+            const min = parseInt(dial.dataset.min);
+            const max = parseInt(dial.dataset.max);
+            const range = max - min + 1;
+            const wrap = dial.dataset.wrap === '1';
+
+            // 클램프 또는 wrap
+            if (wrap) {
+                newValue = ((newValue - min) % range + range) % range + min;
+            } else {
+                newValue = Math.max(min, Math.min(max, newValue));
+            }
+
+            const state = _dialStates[dialId] || { value: newValue, rotation: 0 };
+            const valueAnglePer = (range <= 4) ? (360 / range) : 6;  // 시: 90°, 분/초: 6°
+            // 값에 맞는 회전각 (현재 누적 회전 유지하면서 값만 동기화)
+            // 표시 회전 = -(value - min) * valueAnglePer (값이 커지면 다이얼이 시계반대로 회전, 포인터 아래에 새 값)
+            state.value = newValue;
+            state.rotation = -(newValue - min) * valueAnglePer;
+            state.valueAnglePer = valueAnglePer;
+            _dialStates[dialId] = state;
+
+            const rotating = dial.querySelector('.dial-rotating');
+            rotating.style.transition = animate ? 'transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
+            rotating.style.transform = `rotate(${state.rotation}deg)`;
+
+            const valueEl = dial.querySelector('.dial-value');
+            const display = (max <= 9) ? String(newValue) : String(newValue).padStart(2, '0');
+            if (valueEl.textContent !== display) {
+                valueEl.textContent = display;
+                valueEl.classList.add('pulse');
+                setTimeout(() => valueEl.classList.remove('pulse'), 200);
+            }
+            updateMobilePickerPreview();
+        }
+
+        // 다이얼 ±조정 (버튼용)
+        function dialAdjust(dialId, delta) {
+            const state = _dialStates[dialId] || { value: 0 };
+            setDialValue(dialId, state.value + delta);
+        }
+
+        // 다이얼 회전 제스처 바인딩
+        function bindDialGestures(dial) {
+            if (dial.dataset.bound) return;
+            dial.dataset.bound = '1';
+            const rotating = dial.querySelector('.dial-rotating');
+            const dialId = dial.id;
+            let isDragging = false;
+            let lastAngle = null;
+            let cumDelta = 0;          // 누적 회전 (값 변환 단위 미만)
+            let startValue = 0;
+
+            function getAngleFromCenter(clientX, clientY) {
+                const rect = dial.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                // atan2: -180~180, +90 보정해서 0=상단(12시 방향)
+                return Math.atan2(clientY - cy, clientX - cx) * 180 / Math.PI + 90;
+            }
+
+            function startDrag(clientX, clientY) {
+                isDragging = true;
+                lastAngle = getAngleFromCenter(clientX, clientY);
+                cumDelta = 0;
+                startValue = (_dialStates[dialId] || {}).value || 0;
+                rotating.classList.add('is-dragging');
+                rotating.style.transition = 'none';   // 드래그 중엔 즉시 반응
+            }
+
+            function moveDrag(clientX, clientY) {
+                if (!isDragging) return;
+                const angle = getAngleFromCenter(clientX, clientY);
+                let delta = angle - lastAngle;
+                if (delta > 180) delta -= 360;
+                if (delta < -180) delta += 360;
+                cumDelta += delta;
+                lastAngle = angle;
+
+                const state = _dialStates[dialId];
+                const valueAnglePer = state.valueAnglePer;
+                // 값 단위 변경량
+                const valueChange = Math.trunc(cumDelta / valueAnglePer);
+                if (valueChange !== 0) {
+                    cumDelta -= valueChange * valueAnglePer;
+                    // 다이얼이 시계방향(양의 delta) → 값 증가
+                    setDialValue(dialId, state.value + valueChange, false);
+                } else {
+                    // 값 변경 없을 땐 시각만 부드럽게 이동
+                    rotating.style.transform = `rotate(${state.rotation + cumDelta}deg)`;
+                }
+            }
+
+            function endDrag() {
+                if (!isDragging) return;
+                isDragging = false;
+                rotating.classList.remove('is-dragging');
+                // 정리: 현재 값에 맞춰 정확한 위치로 스냅
+                const state = _dialStates[dialId];
+                if (state) {
+                    rotating.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    rotating.style.transform = `rotate(${state.rotation}deg)`;
+                }
+            }
+
+            // 터치 (모바일 메인)
+            dial.addEventListener('touchstart', (e) => {
+                const t = e.touches[0];
+                startDrag(t.clientX, t.clientY);
+                e.preventDefault();
+            }, { passive: false });
+            dial.addEventListener('touchmove', (e) => {
+                const t = e.touches[0];
+                moveDrag(t.clientX, t.clientY);
+                e.preventDefault();
+            }, { passive: false });
+            dial.addEventListener('touchend', endDrag);
+            dial.addEventListener('touchcancel', endDrag);
+
+            // 마우스 (데스크톱에서 미리보기/테스트)
+            dial.addEventListener('mousedown', (e) => {
+                startDrag(e.clientX, e.clientY);
+                e.preventDefault();
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) moveDrag(e.clientX, e.clientY);
+            });
+            window.addEventListener('mouseup', endDrag);
+
+            // 마우스 휠 (데스크톱)
+            dial.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const state = _dialStates[dialId] || { value: 0 };
+                const delta = e.deltaY < 0 ? 1 : -1;
+                setDialValue(dialId, state.value + delta);
+            }, { passive: false });
+        }
+
+        // 피커 오픈 — 휠 값 → 다이얼 동기화
+        function openMobileTimePicker(target) {
+            _mobilePickerTarget = target;
+            const group = document.querySelector(`.time-wheel-group[data-target="${target}"]`);
+            if (!group) return;
+            let h = 0, m = 0, s = 0;
+            group.querySelectorAll('.time-wheel').forEach(w => {
+                const v = parseInt(w.querySelector('.wheel-value').textContent, 10) || 0;
+                if (w.dataset.unit === 'h') h = v;
+                else if (w.dataset.unit === 'm') m = v;
+                else s = v;
+            });
+
+            // 다이얼 시각 1회 빌드
+            if (!_dialsInitialized) {
+                ['dialHour', 'dialMin', 'dialSec'].forEach(id => {
+                    const d = document.getElementById(id);
+                    if (d) { buildDialVisual(d); bindDialGestures(d); }
+                });
+                _dialsInitialized = true;
+            }
+
+            // 제목
+            document.getElementById('mobilePickerTitle').textContent =
+                (target === 'start' ? '🟢 시작 시간' : '🔴 종료 시간');
+            document.getElementById('mobileTimePicker').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            // 다이얼에 현재 값 동기화 (애니메이션 없이 즉시)
+            requestAnimationFrame(() => {
+                setDialValue('dialHour', h, false);
+                setDialValue('dialMin', m, false);
+                setDialValue('dialSec', s, false);
+                updateMobilePickerPreview();
+            });
+        }
+
+        // 미리보기 업데이트
+        function updateMobilePickerPreview() {
+            const h = (_dialStates['dialHour'] || {}).value || 0;
+            const m = (_dialStates['dialMin'] || {}).value || 0;
+            const s = (_dialStates['dialSec'] || {}).value || 0;
+            const totalSec = h * 3600 + m * 60 + s;
+            const MAX = 3 * 3600;
+            const display = (totalSec > MAX) ? '3:00:00 (최대)' : `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            const preview = document.getElementById('mobilePickerPreview');
+            if (!preview) return;
+            preview.textContent = display;
+            preview.classList.toggle('text-red-600', totalSec > MAX);
+            preview.classList.toggle('text-indigo-700', totalSec <= MAX);
+        }
+
+        // 빠른 프리셋 → 다이얼 동기화
+        function mobilePickerSetPreset(h, m, s) {
+            setDialValue('dialHour', h);
+            setDialValue('dialMin', m);
+            setDialValue('dialSec', s);
+        }
+
+        // 완료 버튼
+        function confirmMobileTimePicker() {
+            if (!_mobilePickerTarget) { closeMobileTimePicker(); return; }
+            let h = (_dialStates['dialHour'] || {}).value || 0;
+            let m = (_dialStates['dialMin'] || {}).value || 0;
+            let s = (_dialStates['dialSec'] || {}).value || 0;
+            // 3시간 클램프
+            if (h * 3600 + m * 60 + s > 3 * 3600) { h = 3; m = 0; s = 0; }
+            setWheelGroup(_mobilePickerTarget, h, m, s);
+            closeMobileTimePicker();
+        }
+
+        function closeMobileTimePicker() {
+            document.getElementById('mobileTimePicker').classList.add('hidden');
+            document.body.style.overflow = '';
+            _mobilePickerTarget = null;
+        }
+
+        // 모바일 감지 헬퍼 (768px 미만)
+        function isMobileViewport() {
+            return window.matchMedia('(max-width: 767px)').matches;
+        }
+
+        // === 휠 클릭/탭 동작 모바일 시 → 바텀시트 오픈으로 변경 ===
+        document.addEventListener('DOMContentLoaded', () => {
+            // 짧은 탭만 바텀시트 트리거 (드래그/스크롤은 무시)
+            document.querySelectorAll('.time-wheel-group').forEach(group => {
+                const target = group.dataset.target;
+                if (!target) return;
+                let touchStartTime = 0;
+                let touchStartXY = null;
+                group.addEventListener('touchstart', (e) => {
+                    touchStartTime = Date.now();
+                    const t = e.touches[0];
+                    touchStartXY = [t.clientX, t.clientY];
+                }, { passive: true });
+                group.addEventListener('touchend', (e) => {
+                    if (!isMobileViewport()) return;
+                    const elapsed = Date.now() - touchStartTime;
+                    const t = e.changedTouches[0];
+                    const dx = touchStartXY ? Math.abs(t.clientX - touchStartXY[0]) : 0;
+                    const dy = touchStartXY ? Math.abs(t.clientY - touchStartXY[1]) : 0;
+                    // 짧고(<300ms) 거의 안 움직인(<10px) 탭만 → 피커 오픈
+                    if (elapsed < 300 && dx < 10 && dy < 10) {
+                        // wheel-value 영역만 트리거 (▲/▼ 버튼 제외)
+                        const tappedValue = e.target.closest('.wheel-value');
+                        if (tappedValue) {
+                            e.preventDefault();
+                            openMobileTimePicker(target);
+                        }
+                    }
+                    touchStartXY = null;
+                });
+            });
+        });
     </script>
 </body>
 </html>

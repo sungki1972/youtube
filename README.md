@@ -14,6 +14,7 @@ YouTube 영상에서 설교 구간을 MP3로 추출하고 체계적으로 관리
 - 🎵 **오디오 스트리밍**: 브라우저에서 바로 재생 가능
 - 📱 **반응형 디자인**: 모바일, 태블릿, 데스크톱 모두 지원
 - ☁️ **클라우드 연동**: Supabase PostgreSQL 데이터베이스
+- 🎬 **시은이 기능**: MP4 → MP3 → 영어인식 → 한글번역 (모바일 최적화)
 
 ## 🚀 빠른 시작
 
@@ -44,7 +45,7 @@ npm start
 ```
 
 ### 3. 접속
-브라우저에서 `http://localhost:9899` 접속
+브라우저에서 `http://localhost:9897` 접속
 
 ## 📱 사용 방법
 
@@ -60,6 +61,25 @@ npm start
 2. "설교 추가" 버튼으로 새 설교 등록
 3. 제목, 날짜, MP3/텍스트 파일 정보 입력
 4. 목록에서 재생, 다운로드, 수정, 삭제 가능
+
+### OpenAI 프롬프트 기능
+1. SUMMARY 탭에서 원하는 요약 항목의 "OpenAI" 버튼 클릭
+2. 5가지 프롬프트 유형 중 선택:
+   - 📊 상세 분석형 프롬프트
+   - 🎓 교육/강의 콘텐츠용 프롬프트
+   - 📖 기본 설교 정리 프롬프트
+   - 🎓 설교 심화 학습용 프롬프트
+   - 🏛️ 교회 소그룹용 프롬프트
+3. OPENAI 탭에서 생성된 결과를 CRUD로 관리
+4. 모바일에서도 편리하게 사용 가능
+
+**⚠️ 중요**: 실제 AI 분석 결과를 받으려면 `.env` 파일에 `OPENAI_API_KEY`를 설정해야 합니다.
+
+### OpenAI API 키 획득 방법
+1. [OpenAI 웹사이트](https://platform.openai.com/)에 접속
+2. 계정 생성 또는 로그인
+3. API Keys 섹션에서 새 API 키 생성
+4. 생성된 키를 `.env` 파일에 `OPENAI_API_KEY=your-actual-api-key` 형태로 설정
 
 ## 기술 스택
 
@@ -88,8 +108,11 @@ npm install
 SUPABASE_URL=your-supabase-project-url
 SUPABASE_KEY=your-supabase-anon-key
 
+# OpenAI API 설정 (프롬프트 기능용)
+OPENAI_API_KEY=your-openai-api-key
+
 # 포트 설정 (선택사항)
-PORT=9899
+PORT=9897
 ```
 
 ### 3. 서버 실행
@@ -103,14 +126,14 @@ npm start
 
 ### 4. 웹 브라우저에서 접속
 ```
-http://localhost:9899
+http://localhost:9897
 ```
 
 ## 데이터베이스 설정
 
 ### Supabase 테이블 생성
-`serm` 테이블을 생성하기 위한 SQL:
 
+#### 1. 기본 설교 관리 테이블
 ```sql
 CREATE TABLE serm (
     id SERIAL PRIMARY KEY,
@@ -125,6 +148,46 @@ CREATE TABLE serm (
 -- 인덱스 생성 (성능 향상)
 CREATE INDEX idx_serm_date ON serm(date);
 CREATE INDEX idx_serm_title ON serm(title);
+```
+
+#### 2. YouTube 요약 테이블
+```sql
+CREATE TABLE youtube_summary (
+    id SERIAL PRIMARY KEY,
+    jemok VARCHAR(255),
+    bonmun TEXT,
+    youyak TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+#### 3. OpenAI 결과 테이블 (새로 추가)
+```sql
+CREATE TABLE openai_result (
+    id SERIAL PRIMARY KEY,
+    summary_id INTEGER REFERENCES youtube_summary(id),
+    prompt_type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 인덱스 생성 (성능 향상)
+CREATE INDEX idx_openai_result_summary_id ON openai_result(summary_id);
+CREATE INDEX idx_openai_result_prompt_type ON openai_result(prompt_type);
+CREATE INDEX idx_openai_result_created_at ON openai_result(created_at);
+```
+
+#### 4. 시은이 히스토리 테이블
+```sql
+CREATE TABLE sieun_history (
+    id SERIAL PRIMARY KEY,
+    original_filename VARCHAR(255) NOT NULL,
+    english_text TEXT NOT NULL,
+    korean_text TEXT NOT NULL,
+    mp3_file_path VARCHAR(500),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 ```
 
 ## 외부 호스팅 설정 (선택사항)

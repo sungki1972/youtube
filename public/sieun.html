@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>은혜로운 교회 - 시은이의 영어학습</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* 모바일 최적화 스타일 */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .upload-area {
+            border: 2px dashed #d97706;
+            transition: all 0.3s ease;
+        }
+        .upload-area.drag-over {
+            border-color: #92400e;
+            background-color: #fffbeb;
+        }
+        .upload-area.processing {
+            border-color: #b45309;
+            background-color: #fef3c7;
+        }
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .blog-content {
+            line-height: 1.8;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .blog-content h1 { font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; font-family: 'Noto Serif KR', serif; }
+        .blog-content h2 { font-size: 1.25rem; font-weight: bold; margin-bottom: 0.75rem; font-family: 'Noto Serif KR', serif; }
+        .blog-content p { margin-bottom: 1rem; }
+        .heading-serif {
+            font-family: 'Noto Serif KR', serif;
+        }
+        .warm-shadow {
+            box-shadow: 0 4px 14px -3px rgba(146, 64, 14, 0.12), 0 2px 6px -2px rgba(146, 64, 14, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-amber-50 to-orange-50 min-h-screen">
+    <!-- 헤더 -->
+    <header class="bg-gradient-to-r from-amber-800 to-amber-700 shadow-md sticky top-0 z-50">
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <svg class="w-8 h-8 text-amber-200" fill="currentColor" viewBox="0 0 24 24"><path d="M11 2v4H7v4h4v12h2V10h4V6h-4V2h-2z"/></svg>
+                    <h1 class="heading-serif text-lg font-bold text-amber-50">은혜로운 교회</h1>
+                </div>
+                <div class="text-xs text-amber-200/70">시은이의 영어학습</div>
+            </div>
+            <div class="mt-3 border-b border-amber-600/40">
+                <nav class="flex -mb-px">
+                    <button id="tab-convert" class="py-2 px-4 border-b-2 border-amber-200 text-amber-100 font-medium text-sm" onclick="switchTab('convert')">
+                        <span class="flex items-center gap-1"><i data-lucide="upload" class="w-4 h-4"></i> 변환</span>
+                    </button>
+                    <button id="tab-history" class="py-2 px-4 border-b-2 border-transparent text-amber-300/70 text-sm" onclick="switchTab('history')">
+                        <span class="flex items-center gap-1"><i data-lucide="clock" class="w-4 h-4"></i> 히스토리</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="px-4 py-6 pb-20">
+        <!-- 탭: 변환 -->
+        <section id="panel-convert">
+        <!-- 업로드 영역 -->
+        <div class="bg-white rounded-xl warm-shadow p-6 mb-6">
+            <h2 class="heading-serif text-lg font-semibold text-amber-900 mb-4 flex items-center gap-2">
+                <i data-lucide="video" class="w-5 h-5 text-amber-600"></i>
+                영어 동영상 업로드
+            </h2>
+
+            <div id="uploadArea" class="upload-area rounded-lg p-8 text-center bg-amber-50/50">
+                <div id="uploadContent">
+                    <div class="mb-4 flex justify-center">
+                        <i data-lucide="film" class="w-12 h-12 text-amber-400"></i>
+                    </div>
+                    <p class="text-amber-800 mb-2 font-medium">MP4 파일을 여기에 드롭하거나 터치해서 선택하세요</p>
+                    <p class="text-xs text-amber-600/60 mb-4">최대 500MB &middot; MP4, MOV, AVI 지원</p>
+                    <input type="file" id="fileInput" accept="video/mp4,video/*" class="hidden">
+                    <button onclick="document.getElementById('fileInput').click()"
+                            class="bg-amber-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-amber-700 transition-colors inline-flex items-center gap-2">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        파일 선택
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 진행상황 -->
+        <div id="progressSection" class="bg-white rounded-xl warm-shadow p-6 mb-6 hidden">
+            <h3 class="heading-serif text-lg font-semibold text-amber-900 mb-4 flex items-center gap-2">
+                <i data-lucide="loader" class="w-5 h-5 text-amber-600 animate-spin"></i>
+                처리 진행상황
+            </h3>
+
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <div id="step1" class="step-indicator">1</div>
+                    <div class="ml-3">
+                        <div class="font-medium text-amber-900">MP4 &rarr; MP3 변환</div>
+                        <div id="step1Status" class="text-sm text-amber-600/70">대기 중...</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center">
+                    <div id="step2" class="step-indicator">2</div>
+                    <div class="ml-3">
+                        <div class="font-medium text-amber-900">영어 음성인식</div>
+                        <div id="step2Status" class="text-sm text-amber-600/70">대기 중...</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center">
+                    <div id="step3" class="step-indicator">3</div>
+                    <div class="ml-3">
+                        <div class="font-medium text-amber-900">한글 번역</div>
+                        <div id="step3Status" class="text-sm text-amber-600/70">대기 중...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="w-full bg-amber-100 rounded-full h-2.5">
+                    <div id="progressBar" class="bg-gradient-to-r from-amber-400 to-amber-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div class="text-sm text-amber-700 mt-2 text-center">
+                    <span id="progressText">준비 중...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 결과 영역 -->
+        <div id="resultSection" class="bg-white rounded-xl warm-shadow p-6 hidden">
+            <h3 class="heading-serif text-lg font-semibold text-amber-900 mb-4 flex items-center gap-2">
+                <i data-lucide="file-text" class="w-5 h-5 text-amber-600"></i>
+                변환 결과
+            </h3>
+
+            <!-- 영어 원문 -->
+            <div class="mb-6">
+                <h4 class="heading-serif font-semibold text-amber-800 mb-2 flex items-center gap-2">
+                    <i data-lucide="languages" class="w-4 h-4 text-amber-600"></i>
+                    영어 원문
+                </h4>
+                <div id="englishText" class="bg-amber-50 border border-amber-200/50 p-4 rounded-xl text-sm text-amber-900"></div>
+            </div>
+
+            <!-- 한글 번역 -->
+            <div class="mb-6">
+                <h4 class="heading-serif font-semibold text-amber-800 mb-2 flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-4 h-4 text-amber-600"></i>
+                    한글 번역
+                </h4>
+                <div id="koreanText" class="blog-content bg-orange-50 border border-orange-200/50 p-4 rounded-xl text-amber-900"></div>
+            </div>
+
+            <!-- 액션 버튼들 -->
+            <div class="flex flex-wrap gap-3">
+                <button onclick="copyText('english')" class="flex-1 bg-amber-600 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors inline-flex items-center justify-center gap-1">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    영어 복사
+                </button>
+                <button onclick="copyText('korean')" class="flex-1 bg-amber-700 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-amber-800 transition-colors inline-flex items-center justify-center gap-1">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    한글 복사
+                </button>
+                <button onclick="saveResult()" class="flex-1 bg-green-700 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors inline-flex items-center justify-center gap-1">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    저장하기
+                </button>
+                <button onclick="newConversion()" class="flex-1 bg-stone-600 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-stone-700 transition-colors inline-flex items-center justify-center gap-1">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    새 변환
+                </button>
+            </div>
+        </div>
+
+        <!-- 오류 영역 -->
+        <div id="errorSection" class="bg-red-50 border border-red-200 rounded-xl p-6 hidden">
+            <h3 class="heading-serif text-lg font-semibold text-red-800 mb-2 flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                오류 발생
+            </h3>
+            <p id="errorMessage" class="text-red-600"></p>
+            <button onclick="newConversion()" class="mt-4 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors inline-flex items-center gap-1">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                다시 시도
+            </button>
+        </div>
+        </section>
+
+        <!-- 탭: 히스토리 -->
+        <section id="panel-history" class="hidden">
+            <div class="bg-white rounded-xl warm-shadow p-4 mb-4">
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="searchInput" placeholder="검색어를 입력하세요..."
+                           class="flex-1 px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-amber-50/50">
+                    <button onclick="loadLocalHistory()" class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors inline-flex items-center gap-1">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> 새로고침
+                    </button>
+                </div>
+            </div>
+            <div id="historyContainer" class="divide-y divide-amber-100 bg-white rounded-xl warm-shadow"></div>
+            <div id="emptyHistory" class="text-center text-amber-600/60 py-8 hidden">아직 기록이 없습니다.</div>
+        </section>
+    </main>
+
+    <!-- 플로팅 액션 버튼 -->
+    <div class="fixed bottom-6 right-6">
+        <button onclick="showHistory()" class="bg-amber-700 text-white w-14 h-14 rounded-full shadow-lg hover:bg-amber-800 transition-colors flex items-center justify-center" style="box-shadow: 0 4px 14px rgba(146,64,14,0.35);">
+            <i data-lucide="book-open" class="w-6 h-6"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentJobId = null;
+        let currentResult = null;
+
+        function switchTab(tab) {
+            document.getElementById('panel-convert').classList.toggle('hidden', tab !== 'convert');
+            document.getElementById('panel-history').classList.toggle('hidden', tab !== 'history');
+            document.getElementById('tab-convert').className = tab === 'convert' ? 'py-2 px-4 border-b-2 border-amber-200 text-amber-100 font-medium text-sm' : 'py-2 px-4 border-b-2 border-transparent text-amber-300/70 text-sm';
+            document.getElementById('tab-history').className = tab === 'history' ? 'py-2 px-4 border-b-2 border-amber-200 text-amber-100 font-medium text-sm' : 'py-2 px-4 border-b-2 border-transparent text-amber-300/70 text-sm';
+            if (tab === 'history') loadLocalHistory();
+        }
+
+        // 파일 업로드 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
+
+            // 파일 선택 이벤트
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // 드래그 앤 드롭 (모바일에서는 제한적)
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('drop', handleDrop);
+
+            // Lucide 아이콘 초기화
+            lucide.createIcons();
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processVideo(file);
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            document.getElementById('uploadArea').classList.add('drag-over');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            document.getElementById('uploadArea').classList.remove('drag-over');
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                processVideo(files[0]);
+            }
+        }
+
+        // 파일 크기 제한 (500MB)
+        const MAX_FILE_SIZE_MB = 500;
+
+        // 비디오 처리 시작
+        async function processVideo(file) {
+            // 파일 타입 검증
+            if (!file.type.includes('video')) {
+                showError('비디오 파일만 업로드할 수 있습니다.\n지원 형식: MP4, MOV, AVI, MKV 등');
+                return;
+            }
+
+            // 파일 크기 검증
+            const fileSizeMB = file.size / (1024 * 1024);
+            if (fileSizeMB > MAX_FILE_SIZE_MB) {
+                showError(`파일이 너무 큽니다.\n현재: ${fileSizeMB.toFixed(1)}MB\n최대: ${MAX_FILE_SIZE_MB}MB`);
+                return;
+            }
+
+            console.log(`[Upload] 파일: ${file.name}, 크기: ${fileSizeMB.toFixed(2)}MB`);
+
+            // UI 상태 변경
+            document.getElementById('uploadArea').classList.add('processing');
+            showProgress();
+            hideResults();
+            hideError();
+
+            // FormData 생성
+            const formData = new FormData();
+            formData.append('video', file);
+
+            try {
+                updateProgress(5, `파일 업로드 중... (${fileSizeMB.toFixed(1)}MB)`, 1, 'processing');
+
+                const response = await fetch('/api/sieun/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentJobId = result.jobId;
+                    monitorProgress(result.jobId);
+                } else {
+                    // 상세 오류 메시지 표시
+                    const errorMsg = result.error || '처리 중 오류가 발생했습니다.';
+                    const details = result.details ? `\n\n상세: ${result.details}` : '';
+                    showError(errorMsg + details);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`네트워크 오류가 발생했습니다.\n\n${error.message || '서버에 연결할 수 없습니다.'}`);
+            }
+        }
+
+        // 진행상황 모니터링
+        function monitorProgress(jobId) {
+            const eventSource = new EventSource(`/api/sieun/progress/${jobId}`);
+
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('Progress:', data);
+
+                    switch(data.type) {
+                        case 'mp3_conversion':
+                            updateProgress(30, 'MP3 변환 중...', 1, 'completed');
+                            updateProgress(30, '음성인식 준비 중...', 2, 'processing');
+                            break;
+
+                        case 'speech_recognition':
+                            updateProgress(60, '영어 음성인식 중...', 2, 'processing');
+                            break;
+
+                        case 'translation':
+                            updateProgress(80, '한글 번역 중...', 2, 'completed');
+                            updateProgress(80, '번역 중...', 3, 'processing');
+                            break;
+
+                        case 'completed':
+                            updateProgress(100, '완료!', 3, 'completed');
+                            showResults(data.result);
+                            eventSource.close();
+                            break;
+
+                        case 'error':
+                            showError(data.message);
+                            eventSource.close();
+                            break;
+                    }
+                } catch (error) {
+                    console.error('Progress parsing error:', error);
+                }
+            };
+
+            eventSource.onerror = function(e) {
+                console.error('SSE 오류:', e);
+                showError('서버 연결이 끊어졌습니다.\n\n잠시 후 다시 시도해주세요.\n(서버가 재시작되었거나 네트워크 문제일 수 있습니다)');
+                eventSource.close();
+            };
+
+            // 60초 타임아웃 (연결은 되었지만 진행이 없는 경우)
+            let lastUpdate = Date.now();
+            const timeoutChecker = setInterval(() => {
+                if (Date.now() - lastUpdate > 120000) { // 2분 타임아웃
+                    console.warn('진행 타임아웃');
+                    clearInterval(timeoutChecker);
+                    eventSource.close();
+                    showError('처리 시간이 너무 오래 걸립니다.\n\n파일이 너무 크거나 서버에 문제가 있을 수 있습니다.');
+                }
+            }, 10000);
+
+            // 완료 또는 오류 시 타임아웃 체커 정리
+            const originalOnMessage = eventSource.onmessage;
+            eventSource.onmessage = function(event) {
+                lastUpdate = Date.now();
+                const data = JSON.parse(event.data);
+                if (data.type === 'completed' || data.type === 'error') {
+                    clearInterval(timeoutChecker);
+                }
+                originalOnMessage.call(this, event);
+            };
+        }
+
+        // UI 업데이트 함수들
+        function updateProgress(percent, text, step, status) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+
+            if (step) {
+                const stepEl = document.getElementById(`step${step}`);
+                const statusEl = document.getElementById(`step${step}Status`);
+
+                stepEl.className = `step-indicator ${status}`;
+                statusEl.textContent = getStatusText(status);
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'processing': return '처리 중...';
+                case 'completed': return '완료';
+                case 'error': return '오류';
+                default: return '대기 중...';
+            }
+        }
+
+        function showProgress() {
+            document.getElementById('progressSection').classList.remove('hidden');
+        }
+
+        function showResults(result) {
+            currentResult = result;
+
+            document.getElementById('englishText').textContent = result.englishText;
+            document.getElementById('koreanText').innerHTML = formatBlogContent(result.koreanText);
+            document.getElementById('resultSection').classList.remove('hidden');
+
+            // 업로드 영역 초기화
+            document.getElementById('uploadArea').classList.remove('processing');
+            document.getElementById('progressSection').classList.add('hidden');
+
+            // Lucide 아이콘 다시 렌더링
+            lucide.createIcons();
+        }
+
+        function formatBlogContent(text) {
+            // 간단한 블로그 형식 포매팅
+            return text
+                .split('\n\n')
+                .map(paragraph => `<p>${paragraph.trim()}</p>`)
+                .join('');
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorSection').classList.remove('hidden');
+            document.getElementById('progressSection').classList.add('hidden');
+            document.getElementById('uploadArea').classList.remove('processing');
+        }
+
+        function hideResults() {
+            document.getElementById('resultSection').classList.add('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorSection').classList.add('hidden');
+        }
+
+        // 액션 함수들
+        async function copyText(type) {
+            const text = type === 'english' ?
+                document.getElementById('englishText').textContent :
+                document.getElementById('koreanText').textContent;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                alert(`${type === 'english' ? '영어' : '한글'} 텍스트가 복사되었습니다.`);
+            } catch (error) {
+                console.error('Copy failed:', error);
+                alert('복사에 실패했습니다.');
+            }
+        }
+
+        async function saveResult() {
+            if (!currentResult) return;
+
+            try {
+                const response = await fetch('/api/sieun/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentResult)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('저장되었습니다!');
+                } else {
+                    alert('저장에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        function newConversion() {
+            // 모든 UI 초기화
+            hideResults();
+            hideError();
+            document.getElementById('progressSection').classList.add('hidden');
+            document.getElementById('uploadArea').classList.remove('processing');
+            document.getElementById('fileInput').value = '';
+            currentResult = null;
+            currentJobId = null;
+        }
+
+        async function loadLocalHistory() {
+            try {
+                const resp = await fetch('/sieun-index');
+                const data = await resp.json();
+                const list = data.items || [];
+                const container = document.getElementById('historyContainer');
+                container.innerHTML = '';
+                if (list.length === 0) {
+                    document.getElementById('emptyHistory').classList.remove('hidden');
+                    return;
+                }
+                document.getElementById('emptyHistory').classList.add('hidden');
+                list.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center justify-between px-3 py-2 text-sm';
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="min-w-[8rem] text-xs text-amber-600/70">${new Date(item.timestamp).toLocaleString('ko-KR')}</div>
+                            <div class="truncate max-w-[28rem] font-medium text-amber-900">${item.baseName}</div>
+                        </div>
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                            ${item.mp4 ? `<a class="px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100" href="${item.mp4}" target="_blank">MP4</a>` : ''}
+                            ${item.mp3 ? `<a class="px-2 py-1 rounded bg-green-50 text-green-700 hover:bg-green-100" href="${item.mp3}" target="_blank">MP3</a>` : ''}
+                            ${item.korean ? `<a class="px-2 py-1 rounded bg-amber-50 text-amber-700 hover:bg-amber-100" href="${item.korean}" target="_blank">KO</a>` : ''}
+                            ${item.english ? `<a class="px-2 py-1 rounded bg-stone-50 text-stone-700 hover:bg-stone-100" href="${item.english}" target="_blank">EN</a>` : ''}
+                            <button class="px-2 py-1 rounded bg-red-50 text-red-700 hover:bg-red-100" onclick="deleteHistoryRow('${item.key}')">삭제</button>
+                        </div>
+                    `;
+                    container.appendChild(row);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function deleteHistoryRow(key) {
+            if (!confirm('정말 삭제하시겠습니까? 관련 MP4/MP3/텍스트 파일이 함께 삭제됩니다.')) return;
+            try {
+                const resp = await fetch(`/api/sieun/history/${encodeURIComponent(key)}`, { method: 'DELETE' });
+                const result = await resp.json();
+                if (result && result.success) {
+                    await loadLocalHistory();
+                } else {
+                    alert('삭제 실패: ' + (result.message || '알 수 없는 오류'));
+                }
+            } catch (e) {
+                console.error('delete error', e);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        function showHistory() {
+            switchTab('history');
+        }
+    </script>
+
+    <style>
+        .step-indicator {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            background-color: #fde68a;
+            color: #92400e;
+        }
+        .step-indicator.processing {
+            background-color: #d97706;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        .step-indicator.completed {
+            background-color: #15803d;
+            color: white;
+        }
+        .step-indicator.error {
+            background-color: #ef4444;
+            color: white;
+        }
+    </style>
+</body>
+</html>

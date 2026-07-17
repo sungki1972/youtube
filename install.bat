@@ -38,7 +38,7 @@ echo SUPABASE_URL=your-supabase-project-url >> .env
 echo SUPABASE_KEY=your-supabase-anon-key >> .env
 echo. >> .env
 echo # 포트 설정 (선택사항) >> .env
-echo PORT=9899 >> .env
+echo PORT=9897 >> .env
 
 echo.
 echo ⚠️  중요: .env 파일에 실제 Supabase 정보를 입력하세요!
@@ -52,6 +52,6 @@ echo.
 echo 또는 개발 모드로 실행하려면:
 echo npm run dev
 echo.
-echo 웹 브라우저에서 http://localhost:9899 로 접속하세요.
+echo 웹 브라우저에서 http://localhost:9897 로 접속하세요.
 echo.
 pause 

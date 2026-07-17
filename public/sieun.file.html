@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>시은이의 영어학습 히스토리</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .blog-content {
+            line-height: 1.8;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .blog-content h1 { font-size: 1.25rem; font-weight: bold; margin-bottom: 0.75rem; }
+        .blog-content h2 { font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .blog-content p { margin-bottom: 0.75rem; }
+        .heading-font {
+            font-family: 'Noto Serif KR', serif;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(146, 64, 14, 0.12);
+            border-color: #d97706;
+        }
+        .warm-shadow {
+            box-shadow: 0 4px 14px rgba(146, 64, 14, 0.08);
+        }
+        .warm-shadow-lg {
+            box-shadow: 0 10px 30px rgba(146, 64, 14, 0.12);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-amber-50 to-orange-50 min-h-screen">
+    <!-- 헤더 -->
+    <header class="bg-gradient-to-r from-amber-800 to-amber-700 shadow-lg sticky top-0 z-50">
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-amber-200" fill="currentColor" viewBox="0 0 24 24"><path d="M11 2v4H7v4h4v12h2V10h4V6h-4V2h-2z"/></svg>
+                    <h1 class="text-lg font-bold text-amber-50 heading-font">학습 히스토리</h1>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="refreshHistory()" class="flex items-center space-x-1 p-2 bg-amber-600 bg-opacity-40 hover:bg-opacity-60 rounded-lg text-amber-100 transition-colors">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        <span class="text-sm">새로고침</span>
+                    </button>
+                    <button onclick="goBack()" class="flex items-center space-x-1 p-2 bg-amber-600 bg-opacity-40 hover:bg-opacity-60 rounded-lg text-amber-100 transition-colors">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span class="text-sm">돌아가기</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 검색 및 필터 -->
+    <div class="px-4 py-4">
+        <div class="bg-white rounded-xl warm-shadow p-4 border border-amber-100">
+            <div class="flex flex-col space-y-3">
+                <div class="flex space-x-2">
+                    <input type="text" id="searchInput" placeholder="검색어를 입력하세요..."
+                           class="flex-1 px-3 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-400 bg-amber-50 bg-opacity-50 placeholder-amber-400">
+                    <button onclick="searchHistory()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors flex items-center">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="flex space-x-2 text-sm">
+                    <button onclick="filterHistory('all')" class="filter-btn active px-3 py-1 bg-amber-100 text-amber-800 rounded-full font-medium transition-colors">
+                        전체
+                    </button>
+                    <button onclick="filterHistory('today')" class="filter-btn px-3 py-1 bg-stone-100 text-stone-600 rounded-full transition-colors">
+                        오늘
+                    </button>
+                    <button onclick="filterHistory('week')" class="filter-btn px-3 py-1 bg-stone-100 text-stone-600 rounded-full transition-colors">
+                        이번주
+                    </button>
+                    <button onclick="filterHistory('month')" class="filter-btn px-3 py-1 bg-stone-100 text-stone-600 rounded-full transition-colors">
+                        이번달
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 히스토리 목록 -->
+    <main class="px-4 pb-20">
+        <!-- 통계 -->
+        <div class="bg-white rounded-xl warm-shadow p-4 mb-4 border border-amber-100">
+            <h3 class="font-semibold text-amber-900 mb-3 heading-font flex items-center space-x-2">
+                <i data-lucide="bar-chart-3" class="w-5 h-5 text-amber-600"></i>
+                <span>학습 통계</span>
+            </h3>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="bg-amber-50 rounded-lg p-3">
+                    <div id="totalCount" class="text-2xl font-bold text-amber-700">0</div>
+                    <div class="text-xs text-amber-600 font-medium">총 변환</div>
+                </div>
+                <div class="bg-orange-50 rounded-lg p-3">
+                    <div id="todayCount" class="text-2xl font-bold text-orange-600">0</div>
+                    <div class="text-xs text-orange-500 font-medium">오늘</div>
+                </div>
+                <div class="bg-yellow-50 rounded-lg p-3">
+                    <div id="weekCount" class="text-2xl font-bold text-yellow-700">0</div>
+                    <div class="text-xs text-yellow-600 font-medium">이번주</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 로딩 -->
+        <div id="loading" class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+            <p class="mt-2 text-amber-700">히스토리를 불러오는 중...</p>
+        </div>
+
+        <!-- 히스토리 카드들 -->
+        <div id="historyContainer" class="space-y-4 hidden">
+            <!-- 히스토리 아이템들이 여기에 동적으로 추가됩니다 -->
+        </div>
+
+        <!-- 빈 상태 -->
+        <div id="emptyState" class="text-center py-12 hidden">
+            <div class="mb-4 flex justify-center">
+                <i data-lucide="book-open" class="w-16 h-16 text-amber-300"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-amber-800 mb-2 heading-font">아직 변환 기록이 없어요</h3>
+            <p class="text-amber-600 mb-6">첫 번째 영어 동영상을 변환해보세요!</p>
+            <button onclick="goBack()" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg transition-colors">
+                변환하러 가기
+            </button>
+        </div>
+
+        <!-- 오류 상태 -->
+        <div id="errorState" class="bg-red-50 border border-red-200 rounded-xl p-6 text-center hidden">
+            <div class="mb-4 flex justify-center">
+                <i data-lucide="alert-circle" class="w-12 h-12 text-red-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-red-800 mb-2 heading-font">오류 발생</h3>
+            <p id="errorMessage" class="text-red-600 mb-4"></p>
+            <button onclick="refreshHistory()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors">
+                다시 시도
+            </button>
+        </div>
+    </main>
+
+    <!-- 플로팅 액션 버튼 -->
+    <div class="fixed bottom-6 right-6">
+        <button onclick="goBack()" class="bg-amber-600 text-white w-14 h-14 rounded-full warm-shadow-lg hover:bg-amber-700 transition-colors flex items-center justify-center">
+            <i data-lucide="plus" class="w-6 h-6"></i>
+        </button>
+    </div>
+
+    <!-- 상세보기 모달 -->
+    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl max-w-lg w-full max-h-screen overflow-y-auto warm-shadow-lg border border-amber-100">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-amber-900 heading-font">상세보기</h3>
+                        <button onclick="closeDetailModal()" class="text-amber-400 hover:text-amber-600 transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div id="modalContent" class="space-y-4">
+                        <!-- 상세 내용이 여기에 표시됩니다 -->
+                    </div>
+
+                    <div class="mt-6 flex space-x-3">
+                        <button onclick="copyModalText('english')" class="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center space-x-1">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <span>영어 복사</span>
+                        </button>
+                        <button onclick="copyModalText('korean')" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center space-x-1">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <span>한글 복사</span>
+                        </button>
+                        <button onclick="deleteHistoryItem()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center space-x-1">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <span>삭제</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lucide 아이콘 초기화
+        lucide.createIcons();
+
+        let historyData = [];
+        let filteredData = [];
+        let currentFilter = 'all';
+        let currentDetailItem = null;
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHistory();
+
+            // 검색 입력 이벤트
+            document.getElementById('searchInput').addEventListener('input', debounce(searchHistory, 300));
+        });
+
+        // 히스토리 데이터 로드
+        async function loadHistory() {
+            try {
+                showLoading();
+
+                const response = await fetch('/api/sieun/history');
+                const data = await response.json();
+
+                if (data.success) {
+                    historyData = data.history;
+                    updateStatistics();
+                    filterHistory(currentFilter);
+                } else {
+                    showError('히스토리를 불러올 수 없습니다.');
+                }
+            } catch (error) {
+                console.error('Load history error:', error);
+                showError('네트워크 오류가 발생했습니다.');
+            }
+        }
+
+        // 통계 업데이트
+        function updateStatistics() {
+            const total = historyData.length;
+            const today = historyData.filter(item => isToday(new Date(item.created_at))).length;
+            const week = historyData.filter(item => isThisWeek(new Date(item.created_at))).length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('todayCount').textContent = today;
+            document.getElementById('weekCount').textContent = week;
+        }
+
+        // 필터링
+        function filterHistory(filter) {
+            currentFilter = filter;
+
+            // 필터 버튼 업데이트
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-amber-100', 'text-amber-800', 'font-medium');
+                btn.classList.add('bg-stone-100', 'text-stone-600');
+            });
+            event.target.classList.add('active', 'bg-amber-100', 'text-amber-800', 'font-medium');
+            event.target.classList.remove('bg-stone-100', 'text-stone-600');
+
+            // 데이터 필터링
+            switch(filter) {
+                case 'today':
+                    filteredData = historyData.filter(item => isToday(new Date(item.created_at)));
+                    break;
+                case 'week':
+                    filteredData = historyData.filter(item => isThisWeek(new Date(item.created_at)));
+                    break;
+                case 'month':
+                    filteredData = historyData.filter(item => isThisMonth(new Date(item.created_at)));
+                    break;
+                default:
+                    filteredData = [...historyData];
+            }
+
+            displayHistory();
+        }
+
+        // 검색
+        function searchHistory() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            if (!searchTerm) {
+                filterHistory(currentFilter);
+                return;
+            }
+
+            filteredData = historyData.filter(item =>
+                item.english_text.toLowerCase().includes(searchTerm) ||
+                item.korean_text.toLowerCase().includes(searchTerm) ||
+                item.original_filename.toLowerCase().includes(searchTerm)
+            );
+
+            displayHistory();
+        }
+
+        // 히스토리 표시
+        function displayHistory() {
+            const container = document.getElementById('historyContainer');
+
+            hideLoading();
+            hideError();
+
+            if (filteredData.length === 0) {
+                container.classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('emptyState').classList.add('hidden');
+            container.classList.remove('hidden');
+
+            container.innerHTML = filteredData.map(item => createHistoryCard(item)).join('');
+            // 동적 콘텐츠에 대해 Lucide 아이콘 다시 초기화
+            lucide.createIcons();
+        }
+
+        // 히스토리 카드 생성
+        function createHistoryCard(item) {
+            const date = new Date(item.created_at).toLocaleString('ko-KR');
+            const englishPreview = item.english_text.substring(0, 100) + (item.english_text.length > 100 ? '...' : '');
+            const koreanPreview = item.korean_text.substring(0, 100) + (item.korean_text.length > 100 ? '...' : '');
+
+            return `
+                <div class="bg-white rounded-xl warm-shadow p-4 card-hover cursor-pointer border border-amber-100" onclick="showDetail(${item.id})">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-amber-500 rounded-full"></div>
+                            <span class="text-sm font-medium text-amber-900">${item.original_filename}</span>
+                        </div>
+                        <span class="text-xs text-amber-500">${date}</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <div class="text-xs font-medium text-orange-700 mb-1 flex items-center space-x-1">
+                                <i data-lucide="languages" class="w-3 h-3"></i>
+                                <span>영어</span>
+                            </div>
+                            <div class="text-sm text-stone-700 bg-orange-50 p-2 rounded-lg border border-orange-100">${englishPreview}</div>
+                        </div>
+
+                        <div>
+                            <div class="text-xs font-medium text-amber-800 mb-1 flex items-center space-x-1">
+                                <i data-lucide="book-open" class="w-3 h-3"></i>
+                                <span>한글</span>
+                            </div>
+                            <div class="text-sm text-stone-700 bg-amber-50 p-2 rounded-lg border border-amber-100 blog-content">${koreanPreview}</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 flex justify-between items-center">
+                        <div class="flex space-x-2">
+                            <span class="text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-full border border-amber-200">
+                                ${item.english_text.split(' ').length}단어
+                            </span>
+                            <span class="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded-full border border-orange-200">
+                                ${item.korean_text.length}자
+                            </span>
+                        </div>
+                        <div class="text-xs text-amber-400 flex items-center space-x-1">
+                            <span>자세히 보기</span>
+                            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 상세보기
+        function showDetail(id) {
+            const item = historyData.find(h => h.id === id);
+            if (!item) return;
+
+            currentDetailItem = item;
+
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <div>
+                    <h4 class="font-medium text-amber-900 mb-2 flex items-center space-x-2">
+                        <i data-lucide="file-video" class="w-4 h-4 text-amber-600"></i>
+                        <span>파일명</span>
+                    </h4>
+                    <div class="text-sm text-stone-600 bg-amber-50 p-3 rounded-lg border border-amber-100">${item.original_filename}</div>
+                </div>
+
+                <div>
+                    <h4 class="font-medium text-orange-800 mb-2 flex items-center space-x-2">
+                        <i data-lucide="languages" class="w-4 h-4 text-orange-600"></i>
+                        <span>영어 원문</span>
+                    </h4>
+                    <div id="modalEnglish" class="text-sm text-stone-700 bg-orange-50 p-3 rounded-lg max-h-40 overflow-y-auto border border-orange-100">${item.english_text}</div>
+                </div>
+
+                <div>
+                    <h4 class="font-medium text-amber-800 mb-2 flex items-center space-x-2">
+                        <i data-lucide="book-open" class="w-4 h-4 text-amber-600"></i>
+                        <span>한글 번역</span>
+                    </h4>
+                    <div id="modalKorean" class="text-sm text-stone-700 bg-amber-50 p-3 rounded-lg max-h-40 overflow-y-auto border border-amber-100 blog-content">${item.korean_text}</div>
+                </div>
+
+                <div>
+                    <h4 class="font-medium text-amber-900 mb-2 flex items-center space-x-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-amber-600"></i>
+                        <span>변환 날짜</span>
+                    </h4>
+                    <div class="text-sm text-stone-600">${new Date(item.created_at).toLocaleString('ko-KR')}</div>
+                </div>
+            `;
+
+            document.getElementById('detailModal').classList.remove('hidden');
+            // 모달 내부 아이콘 초기화
+            lucide.createIcons();
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            currentDetailItem = null;
+        }
+
+        // 모달에서 텍스트 복사
+        async function copyModalText(type) {
+            if (!currentDetailItem) return;
+
+            const text = type === 'english' ? currentDetailItem.english_text : currentDetailItem.korean_text;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                alert(`${type === 'english' ? '영어' : '한글'} 텍스트가 복사되었습니다.`);
+            } catch (error) {
+                alert('복사에 실패했습니다.');
+            }
+        }
+
+        // 히스토리 아이템 삭제
+        async function deleteHistoryItem() {
+            if (!currentDetailItem) return;
+
+            if (!confirm('정말로 이 기록을 삭제하시겠습니까?')) return;
+
+            try {
+                const response = await fetch(`/api/sieun/history/${currentDetailItem.id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeDetailModal();
+                    refreshHistory();
+                    alert('삭제되었습니다.');
+                } else {
+                    alert('삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 유틸리티 함수들
+        function refreshHistory() {
+            loadHistory();
+        }
+
+        function goBack() {
+            window.location.href = '/sieun.html';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('historyContainer').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorState').classList.remove('hidden');
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('historyContainer').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorState').classList.add('hidden');
+        }
+
+        // 날짜 유틸리티
+        function isToday(date) {
+            const today = new Date();
+            return date.toDateString() === today.toDateString();
+        }
+
+        function isThisWeek(date) {
+            const today = new Date();
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            return date >= weekAgo && date <= today;
+        }
+
+        function isThisMonth(date) {
+            const today = new Date();
+            return date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+        }
+
+        // 디바운스 유틸리티
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>

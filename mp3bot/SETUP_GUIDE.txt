@@ -1,0 +1,113 @@
+# 은혜로운 교회 MP3 변환 봇 - 설치 가이드
+# Windows 서버 + PM2 방식
+
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 1단계: 파일 준비
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 서버(112.223.44.142)에 폴더 확인
+# C:\Users\neola\OneDrive\문서\cursor\25\8\mp3\mp3bot\
+
+#   C:\Users\neola\OneDrive\문서\cursor\25\8\mp3\mp3bot\
+#   ├── telegram_mp3_bot.py   ← 텔레그램 봇
+#   ├── batch_convert.py      ← 일괄 변환
+#   ├── urls_sample.txt       ← URL 목록 예시
+#   ├── ecosystem.config.js   ← PM2 설정파일
+#   └── logs\                 ← 로그 폴더 (자동 생성)
+
+
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 2단계: Node.js 설치 (PM2에 필요)
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 이미 설치되어 있는지 확인 (CMD 또는 PowerShell):
+#   node --version
+#
+# 설치 안 되어 있으면:
+#   https://nodejs.org 에서 LTS 버전 다운로드 후 설치
+#   설치 후 CMD 새로 열어서 확인:
+#   node --version
+
+
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 3단계: PM2 설치
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# CMD (관리자 권한)에서:
+npm install -g pm2
+pm2 --version
+
+# Windows 자동시작 설정:
+npm install -g pm2-windows-startup
+pm2-startup install
+
+
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 4단계: Python 패키지 설치
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+pip install requests
+
+
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 5단계: 텔레그램 봇 토큰 설정
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 방법 A: 환경변수로 설정 (추천)
+# CMD에서:
+set TELEGRAM_BOT_TOKEN=여기에_Jinjuno1_bot_토큰
+# 또는 시스템 환경변수에 영구 등록
+
+# 방법 B: telegram_mp3_bot.py 파일에서 직접 수정
+# TELEGRAM_BOT_TOKEN = "여기에_봇_토큰_입력" 부분을 실제 토큰으로 변경
+
+# 방법 C: ecosystem.config.js 에서 설정 (아래 파일 참고)
+
+
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 6단계: PM2로 봇 실행
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# CMD에서 mp3bot 폴더로 이동:
+cd "C:\Users\neola\OneDrive\문서\cursor\25\8\mp3\mp3bot"
+
+# logs 폴더 생성:
+mkdir logs
+
+# ecosystem.config.js 사용하여 실행:
+pm2 start ecosystem.config.js
+
+# 또는 직접 실행:
+pm2 start telegram_mp3_bot.py --name mp3bot --interpreter python
+
+# 상태 확인:
+pm2 status
+
+# 로그 보기:
+pm2 logs mp3bot
+
+# 서버 재부팅 후에도 자동 시작되도록 저장:
+pm2 save
+
+
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## PM2 자주 쓰는 명령어
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# pm2 status          ← 실행 중인 프로세스 목록
+# pm2 logs mp3bot     ← 로그 실시간 보기
+# pm2 restart mp3bot  ← 재시작
+# pm2 stop mp3bot     ← 중지
+# pm2 delete mp3bot   ← 삭제
+# pm2 monit           ← CPU/메모리 모니터링
+
+
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 일괄 변환 사용법
+## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# urls_sample.txt를 참고하여 urls.txt 작성 후:
+python batch_convert.py urls.txt
+
+# 또는 batch_convert.py 안의 DEFAULT_URLS를 직접 수정하여:
+python batch_convert.py

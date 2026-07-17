@@ -45,6 +45,36 @@ temp/
 *.sqlite
 *.sqlite3
 
-# PM2 프로세스 파일
-ecosystem.config.js
+# PM2 프로세스 파일 (ecosystem.config.js는 버전 관리에 포함)
+
+# 시은이 처리 결과
+sieun/
+
+# MP4 요약 결과 (원본/요약 mp4 + 로컬 폴백 index.json)
+mp4/
+
+# 비디오 파일
+*.mp4
+
+# 서버 로그/PID
+server.log
+server.pid
+
+# 봇 설정 (텔레그램/Claude 봇 토큰 포함 — 절대 커밋 금지, example 파일 참고)
+mp3bot/ecosystem.config.js
+
+# 도구/캐시 디렉터리
+.bkit/
+.claude/
+__pycache__/
+
+# 테스트 산출물
+test_*.js
+test_*.md
+test_sermon*.pdf
+*.zip
+
+
+
+
 

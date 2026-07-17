@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>벨소리 만들기</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #fffbeb 0%, #fed7aa 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0 30px;
+        }
+        .header svg {
+            width: 32px;
+            height: 32px;
+            color: #92400e;
+        }
+        .header h2 {
+            font-family: 'Noto Serif KR', serif;
+            color: #92400e;
+            font-size: 24px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(146, 64, 14, 0.1);
+            border: 1px solid #fef3c7;
+        }
+        .card h3 {
+            font-family: 'Noto Serif KR', serif;
+            color: #92400e;
+            font-size: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .ringtone-button {
+            display: block;
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #d97706 0%, #92400e 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .ringtone-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
+        }
+        .ringtone-button:active {
+            transform: translateY(0);
+        }
+        .app-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .app-link {
+            display: block;
+            padding: 12px 16px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #92400e;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .app-link:hover {
+            background: #fef3c7;
+            border-color: #d97706;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M11 2v4H7v4h4v12h2V10h4V6h-4V2h-2z"/></svg>
+        <h2>벨소리 만들기</h2>
+    </div>
+
+    <!-- 방법 1: 직접 Intent 호출 -->
+    <div class="card">
+        <h3>기본 음악 앱으로 열기</h3>
+        <a href="intent://file/sdcard/Download/sample.mp3#Intent;
+           action=android.intent.action.VIEW;
+           type=audio/*;
+           end"
+           class="ringtone-button">
+            기본 음악 앱으로 열기
+        </a>
+    </div>
+
+    <!-- 방법 2: 특정 앱 지정 -->
+    <div class="card">
+        <h3>앱 선택하여 열기</h3>
+        <div class="app-options">
+            <a href="#" onclick="openWithApp('com.bigbang.ringtonemaker')"
+               class="app-link">
+                Ringtone Maker
+            </a>
+            <a href="#" onclick="openWithApp('com.mp3cutter.ringtone.maker')"
+               class="app-link">
+                MP3 Cutter
+            </a>
+            <a href="#" onclick="openWithApp('com.meitu.ringtonemaker')"
+               class="app-link">
+                Ringtone Maker Pro
+            </a>
+        </div>
+    </div>
+
+    <!-- 방법 3: 다운로드 후 선택 -->
+    <div class="card">
+        <h3>다운로드 후 편집</h3>
+        <button onclick="downloadAndOpen()" class="ringtone-button">
+            다운로드 후 앱 선택
+        </button>
+    </div>
+
+    <script>
+    // MP3 파일 URL
+    const mp3Url = 'http://112.223.44.142/neo/1.mp3';
+
+    function openWithApp(packageName) {
+        // Intent URL 생성
+        const intentUrl = `intent://open#Intent;` +
+            `action=android.intent.action.VIEW;` +
+            `type=audio/mp3;` +
+            `package=${packageName};` +
+            `S.android.intent.extra.STREAM=${mp3Url};` +
+            `end`;
+
+        // 앱 실행 시도
+        window.location.href = intentUrl;
+
+        // 앱이 없으면 Play Store로
+        setTimeout(() => {
+            if (confirm('앱이 설치되어 있지 않습니다. 설치 페이지로 이동하시겠습니까?')) {
+                window.location.href = `market://details?id=${packageName}`;
+            }
+        }, 1500);
+    }
+
+    function downloadAndOpen() {
+        // 파일 다운로드
+        const a = document.createElement('a');
+        a.href = mp3Url;
+        a.download = 'ringtone.mp3';
+
+        // MIME 타입 설정으로 앱 선택 유도
+        a.type = 'audio/mp3';
+
+        // 다운로드 실행
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // 안내 메시지
+        setTimeout(() => {
+            alert('다운로드 완료 후 "다음에 사용할 앱 선택"에서 Ringtone Maker를 선택하세요.');
+        }, 1000);
+    }
+
+    // 사용자 에이전트 확인
+    function checkPlatform() {
+        const userAgent = navigator.userAgent.toLowerCase();
+
+        if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
+            alert('iOS에서는 GarageBand를 사용해 벨소리를 만들 수 있습니다.');
+            return false;
+        }
+        return true;
+    }
+    </script>
+</body>
+</html>
